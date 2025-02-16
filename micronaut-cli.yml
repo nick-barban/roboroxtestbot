@@ -1,0 +1,6 @@
+applicationType: function
+defaultPackage: com.nb
+testFramework: junit
+sourceLanguage: java
+buildTool: maven
+features: [app-name, arm, aws-cdk, aws-lambda, aws-lambda-events-serde, aws-lambda-function-url, chatbots-telegram-lambda, http-client-test, java, junit, logback, maven, maven-enforcer-plugin, properties, readme, serialization-jackson, shade, validation]

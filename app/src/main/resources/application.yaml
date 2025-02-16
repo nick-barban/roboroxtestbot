@@ -1,0 +1,10 @@
+#Mon Feb 03 20:03:51 UTC 2025
+micronaut:
+  application.name: micronautguide
+  chatbots:
+    folder: botcommands
+    telegram.bots.example:
+      token: ${ROBOROXTESTBOT_WEBHOOK_TOKEN:WEBHOOK_TOKEN}
+      at-username: "@MyMicronautExampleBot"
+
+
