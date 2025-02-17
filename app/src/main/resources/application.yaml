@@ -6,5 +6,12 @@ micronaut:
     telegram.bots.example:
       token: ${ROBOROXTESTBOT_WEBHOOK_TOKEN:WEBHOOK_TOKEN}
       at-username: "@MyMicronautExampleBot"
+  jms:
+    sqs:
+      enabled: true
 
-
+app:
+  queue:
+    input:
+      name: ${INPUT_QUEUE:local_input.fifo}
+      dlq: dlq_${app.queue.input.name}

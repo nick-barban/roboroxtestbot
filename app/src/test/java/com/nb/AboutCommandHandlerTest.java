@@ -7,15 +7,15 @@ import io.micronaut.chatbots.telegram.api.send.SendMessage;
 import io.micronaut.chatbots.telegram.core.TelegramBotConfiguration;
 import io.micronaut.context.BeanContext;
 import io.micronaut.json.JsonMapper;
-import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicronautTest(startApplication = false)
-class AboutCommandHandlerTest {
+class AboutCommandHandlerTest extends AbstractTest {
 
     @Inject
     BeanContext ctx;

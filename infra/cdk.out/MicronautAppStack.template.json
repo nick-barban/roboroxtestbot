@@ -27,6 +27,18 @@
         ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
        ]
       ]
+     },
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AmazonSQSFullAccess"
+       ]
+      ]
      }
     ]
    },
@@ -71,7 +83,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "7d7ece9adc006fd0396752d5fe41ba29cea3262287082e7d05c607b06fa5d180.jar"
+     "S3Key": "827e143f9e13774ffcd0339838046a4ac11e11b8714efc7ac38a7be5f41651c8.jar"
     },
     "Handler": "io.micronaut.chatbots.telegram.lambda.Handler",
     "MemorySize": 2048,
@@ -93,7 +105,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "MicronautAppStack/micronaut-function/Resource",
-    "aws:asset:path": "asset.7d7ece9adc006fd0396752d5fe41ba29cea3262287082e7d05c607b06fa5d180.jar",
+    "aws:asset:path": "asset.827e143f9e13774ffcd0339838046a4ac11e11b8714efc7ac38a7be5f41651c8.jar",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
