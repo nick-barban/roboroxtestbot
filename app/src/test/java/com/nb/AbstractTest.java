@@ -20,9 +20,12 @@ public class AbstractTest implements TestPropertyProvider {
         if (!LOCALSTACK.isRunning()) {
             LOCALSTACK.start();
         }
-        return Map.of("aws.access-key-id", LOCALSTACK.getAccessKey(),
+        return Map.of(
+                "app.queue.input.name", "test_input.fifo",
+                "aws.access-key-id", LOCALSTACK.getAccessKey(),
                 "aws.secret-key", LOCALSTACK.getSecretKey(),
                 "aws.region", LOCALSTACK.getRegion(),
-                "aws.services.sqs.endpoint-override", LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.SQS).toString());
+                "aws.services.sqs.endpoint-override", LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.SQS).toString()
+        );
     }
 }

@@ -13,5 +13,5 @@ micronaut:
 app:
   queue:
     input:
-      name: ${INPUT_QUEUE:local_input.fifo}
+      name: ${INPUT_QUEUE}
       dlq: dlq_${app.queue.input.name}
