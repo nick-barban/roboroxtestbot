@@ -49,10 +49,11 @@ class StartCommandHandlerTest extends AbstractTest {
     private String expectedStartCommandResponse() {
         return """
                 You can use next commands:
-                /schedule - get schedule per week
-                /post - generate post about today's class in the hosting RoboRox channel
+                /request-assignment - admin should allow requested user to ma
                 
                 Nearest future commands:
+                /schedule - get schedule per week
+                /post - generate post about today's class in the hosting RoboRox channel
                 /listschools - list all RoboRox schools
                 /uad - get info about RoboRoxAkademiaDytynstva
                 /azbuka - get info about RoboRoxAzbuka

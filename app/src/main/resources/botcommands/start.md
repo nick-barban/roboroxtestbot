@@ -1,5 +1,5 @@
 You can use next commands:
-/request-assignment - admin should allow requested user to ma 
+/request-assignment - admin should allow requested user to ma
 
 Nearest future commands:
 /schedule - get schedule per week
