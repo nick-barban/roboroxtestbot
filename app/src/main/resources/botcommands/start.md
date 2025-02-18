@@ -1,9 +1,9 @@
 You can use next commands:
-/request-assignment - admin should allow requested user to ma
+/post - generate post about today's class in the hosting RoboRox channel
 
 Nearest future commands:
+/request-assignment - admin should allow requested user to ma
 /schedule - get schedule per week
-/post - generate post about today's class in the hosting RoboRox channel
 /listschools - list all RoboRox schools
 /uad - get info about RoboRoxAkademiaDytynstva
 /azbuka - get info about RoboRoxAzbuka

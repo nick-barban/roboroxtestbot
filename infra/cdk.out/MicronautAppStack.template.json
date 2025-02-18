@@ -83,7 +83,7 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "827e143f9e13774ffcd0339838046a4ac11e11b8714efc7ac38a7be5f41651c8.jar"
+     "S3Key": "b2c20e63743d255132b6bc3ed69cf9edc8f11148631ef1417973789e5e9509a0.jar"
     },
     "Handler": "io.micronaut.chatbots.telegram.lambda.Handler",
     "MemorySize": 2048,
@@ -105,7 +105,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "MicronautAppStack/micronaut-function/Resource",
-    "aws:asset:path": "asset.827e143f9e13774ffcd0339838046a4ac11e11b8714efc7ac38a7be5f41651c8.jar",
+    "aws:asset:path": "asset.b2c20e63743d255132b6bc3ed69cf9edc8f11148631ef1417973789e5e9509a0.jar",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
