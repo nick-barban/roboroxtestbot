@@ -10,7 +10,7 @@ import static io.micronaut.jms.sqs.configuration.SqsConfiguration.CONNECTION_FAC
 @JMSProducer(CONNECTION_FACTORY_BEAN_NAME)
 public interface InputMessageProducer {
 
-    @Queue("${app.queue.input.name}")
+    @Queue(value = "${app.queue.input.name}", successHandlers = MessageProducerSuccessHandler.class, errorHandlers = MessageProducerErrorHandler.class)
     void send(@MessageBody String body, @MessageHeader("JMSXGroupID") String messageGroupId, @MessageHeader("JMS_SQS_DeduplicationId") String messageDeduplicationId);
 
     default String getQueueName() {

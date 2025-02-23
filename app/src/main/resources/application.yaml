@@ -10,8 +10,17 @@ micronaut:
     sqs:
       enabled: true
 
+
 app:
   queue:
     input:
       name: ${INPUT_QUEUE}
       dlq: dlq_${app.queue.input.name}
+    output:
+      name: ${OUTPUT_QUEUE}
+      dlq: dlq_${app.queue.output.name}
+
+logger:
+  levels:
+    com.nb.service.MessageProducerSuccessHandler: INFO
+    com.nb.service.InputMessageConsumer: ${INPUT_MESSAGE_CONSUMER_LOGGER_LEVEL:INFO}

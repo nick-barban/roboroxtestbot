@@ -9,13 +9,13 @@ import com.amazonaws.services.sqs.model.SendMessageResult;
 import jakarta.inject.Singleton;
 
 //@Singleton
-public class AmazonSqsConfig extends AmazonSQSClient {
-    private static final AmazonSQS CLIENT = AmazonSQSClientBuilder.standard()
+public class AmazonSqsConfig /*extends AmazonSQSClient*/ {
+    /*private static final AmazonSQS CLIENT = AmazonSQSClientBuilder.standard()
             .withRegion(Regions.US_EAST_1)
             .build();
 
     @Override
     public SendMessageResult sendMessage(SendMessageRequest request) {
         return CLIENT.sendMessage(request);
-    }
+    }*/
 }
