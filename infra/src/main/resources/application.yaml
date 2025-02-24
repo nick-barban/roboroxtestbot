@@ -1,8 +1,0 @@
-#Mon Feb 03 20:03:51 UTC 2025
-app:
-  queue:
-    - name: ${INPUT_QUEUE}
-      dlq: dlq_${app.queue[0].name}
-    - name: ${OUTPUT_QUEUE}
-      dlq: dlq_${app.queue[1].name}
-  prop: value

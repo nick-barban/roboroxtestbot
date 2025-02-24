@@ -7,14 +7,14 @@
         <artifactId>micronaut-parent</artifactId>
         <version>4.7.4</version>
     </parent>
-    <artifactId>micronautguide-parent</artifactId>
+    <artifactId>rrtb-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
     <groupId>com.nb</groupId>
-    <name>micronautguide</name>
+    <name>RoboRox Test Bot</name>
     <packaging>pom</packaging>
 
     <modules>
-        <module>app</module>
-        <module>infra</module>
+        <module>rrtb_input_tbot</module>
+        <module>rrtb_infra</module>
     </modules>
 </project>

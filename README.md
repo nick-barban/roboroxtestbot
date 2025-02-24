@@ -14,7 +14,7 @@ Once you have a username and HTTP auth key for your new bot, edit the applicatio
 
 ## Lambda handler class
 
-The Cdk project defined in `infra` is already configured to use `io.micronaut.chatbots.telegram.lambda.Handler` as the handler for your Lambda function.
+The Cdk project defined in `rrtb_infra` is already configured to use `io.micronaut.chatbots.telegram.lambda.Handler` as the handler for your Lambda function.
 
 You can then set up the Telegram webhook by running the following command:
 
