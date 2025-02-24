@@ -1,0 +1,1 @@
+Send daily post text for this channel

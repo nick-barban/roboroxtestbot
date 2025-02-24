@@ -1,0 +1,26 @@
+#Mon Feb 03 20:03:51 UTC 2025
+micronaut:
+  application.name: rrtb
+  chatbots:
+    folder: botcommands
+    telegram.bots.example:
+      token: ${ROBOROXTESTBOT_WEBHOOK_TOKEN:WEBHOOK_TOKEN}
+      at-username: "@MyMicronautExampleBot"
+  jms:
+    sqs:
+      enabled: true
+
+
+app:
+  queue:
+    input:
+      name: ${INPUT_QUEUE}
+      dlq: dlq_${app.queue.input.name}
+    output:
+      name: ${OUTPUT_QUEUE}
+      dlq: dlq_${app.queue.output.name}
+
+logger:
+  levels:
+    com.nb.service.MessageProducerSuccessHandler: ${MESSAGE_PRODUCER_SUCCESS_HANDLER_LOGGER_LEVEL:INFO}
+    com.nb.service.InputMessageConsumer: ${INPUT_MESSAGE_CONSUMER_LOGGER_LEVEL:INFO}
