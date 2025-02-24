@@ -162,7 +162,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "b2c20e63743d255132b6bc3ed69cf9edc8f11148631ef1417973789e5e9509a0.jar"
+                      "s3Key": "a574fa0768b73595d8c6dedb5e799d24faf4407fea41fa0300d2435802b3e5cb.jar"
                     },
                     "handler": "io.micronaut.chatbots.telegram.lambda.Handler",
                     "memorySize": 2048,

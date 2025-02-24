@@ -6,7 +6,7 @@ import io.micronaut.context.annotation.ConfigurationProperties;
 @ConfigurationProperties("aws")
 public class SqsConfig {
 
-    @ConfigurationBuilder(configurationPrefix = "services.sqs")
+        @ConfigurationBuilder(configurationPrefix = "services.sqs")
     final Sqs sqs = new Sqs();
     private String accessKeyId;
     private String secretKey;

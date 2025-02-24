@@ -23,7 +23,7 @@ class SqsClientBuilderListener implements BeanCreatedEventListener<SqsClientBuil
 
     @Override
     public SqsClientBuilder onCreated(@NonNull BeanCreatedEvent<SqsClientBuilder> event) {
-        SqsClientBuilder builder = event.getBean();
+        final SqsClientBuilder builder = event.getBean();
         try {
             final String endpointOverride = sqsConfig.getSqs().getEndpointOverride();
             final String accessKeyId = sqsConfig.getAccessKeyId();
