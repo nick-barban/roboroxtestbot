@@ -1,0 +1,6 @@
+applicationType: function
+defaultPackage: com.nb
+testFramework: junit
+sourceLanguage: java
+buildTool: maven
+features: [app-name, aws-lambda, aws-lambda-events-serde, aws-lambda-handler-function, aws-lambda-scheduled-event, http-client-test, java, junit, logback, lombok, maven, maven-enforcer-plugin, properties, readme, serialization-jackson, shade, snapstart, x86]
