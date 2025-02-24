@@ -1,0 +1,138 @@
+{
+  "version": "38.0.1",
+  "artifacts": {
+    "MicronautAppStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "MicronautAppStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "MicronautAppStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "MicronautAppStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "notificationArns": [],
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/c91f4de73a40459dff06719a5908dd662fab5358cdf63f18c0a78c7fcf1ed7d9.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "MicronautAppStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "MicronautAppStack.assets"
+      ],
+      "metadata": {
+        "/MicronautAppStack/micronaut-function/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "micronautfunctionServiceRole926B30A6"
+          }
+        ],
+        "/MicronautAppStack/micronaut-function/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "micronautfunctionServiceRoleDefaultPolicy79AEAF70"
+          }
+        ],
+        "/MicronautAppStack/micronaut-function/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "micronautfunction1B56B9AC"
+          }
+        ],
+        "/MicronautAppStack/micronaut-function/LogRetention/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "micronautfunctionLogRetention242EFD26"
+          }
+        ],
+        "/MicronautAppStack/micronaut-function/FunctionUrl/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "micronautfunctionFunctionUrl0580D213"
+          }
+        ],
+        "/MicronautAppStack/micronaut-function/invoke-function-url": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "micronautfunctioninvokefunctionurl70F82F3A"
+          }
+        ],
+        "/MicronautAppStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+          }
+        ],
+        "/MicronautAppStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB"
+          }
+        ],
+        "/MicronautAppStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A"
+          }
+        ],
+        "/MicronautAppStack/LatestNodeRuntimeMap": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LatestNodeRuntimeMap"
+          }
+        ],
+        "/MicronautAppStack/MnTestApiUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "MnTestApiUrl"
+          }
+        ],
+        "/MicronautAppStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/MicronautAppStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/MicronautAppStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/MicronautAppStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "MicronautAppStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
