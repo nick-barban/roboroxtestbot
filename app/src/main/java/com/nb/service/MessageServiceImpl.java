@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 public class MessageServiceImpl implements MessageService {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageServiceImpl.class);
-    private final InputMessageProducer inputMessageProducer;
+    private final MessageProducer inputMessageProducer;
 
-    public MessageServiceImpl(InputMessageProducer inputMessageProducer) {
+    public MessageServiceImpl(MessageProducer inputMessageProducer) {
         this.inputMessageProducer = inputMessageProducer;
     }
 
@@ -24,7 +24,7 @@ public class MessageServiceImpl implements MessageService {
             final Long chatId = input.getMessage().getChat().getId();
             final Integer updateId = input.getUpdateId();
             LOG.info("SendMessage with id: {} and updateID: {} from chat: {}", input.getMessage().getMessageId(), updateId, chatId);
-            inputMessageProducer.send(msg, String.valueOf(chatId), String.valueOf(updateId));
+            inputMessageProducer.sendInput(msg, String.valueOf(chatId), String.valueOf(updateId));
         } catch (Exception e) {
             throw new RuntimeException("Could not send message to queue", e);
         }

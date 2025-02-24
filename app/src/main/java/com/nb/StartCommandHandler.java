@@ -1,7 +1,7 @@
 package com.nb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nb.service.InputMessageProducer;
+import com.nb.service.MessageProducer;
 import io.micronaut.chatbots.core.SpaceParser;
 import io.micronaut.chatbots.core.TextResourceLoader;
 import io.micronaut.chatbots.telegram.api.Chat;
@@ -24,14 +24,14 @@ class StartCommandHandler extends CommandHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(StartCommandHandler.class);
     private static final String COMMAND_START = "/start";
-    private final InputMessageProducer producer;
+    private final MessageProducer producer;
     private final ObjectMapper objectMapper;
 
     StartCommandHandler(
             TelegramSlashCommandParser slashCommandParser,
             TextResourceLoader textResourceLoader,
             SpaceParser<Update, Chat> spaceParser,
-            InputMessageProducer producer
+            MessageProducer producer
     ) {
         super(slashCommandParser, textResourceLoader, spaceParser);
         this.producer = producer;
@@ -52,7 +52,7 @@ class StartCommandHandler extends CommandHandler {
             final Long chatId = input.getMessage().getChat().getId();
             final Integer updateId = input.getUpdateId();
             LOG.info("SendMessage with id: {} and updateID: {} from chat: {}", input.getMessage().getMessageId(), updateId, chatId);
-            producer.send(msg, String.valueOf(chatId), String.valueOf(updateId));
+            producer.sendInput(msg, String.valueOf(chatId), String.valueOf(updateId));
             return super.handle(bot, input);
         } catch (Exception e) {
             throw new RuntimeException("Could not send message to queue", e);

@@ -2,12 +2,14 @@ package com.nb.service;
 
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.jms.listener.JMSListenerErrorHandler;
+import jakarta.inject.Singleton;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class MessageProducerErrorHandler implements JMSListenerErrorHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(MessageProducerErrorHandler.class);
