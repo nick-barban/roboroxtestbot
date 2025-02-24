@@ -12,7 +12,7 @@ cd infra
 cdk synth --quiet true
 cdk deploy --require-approval never
 cd ..
-STACK_NAME=MicronautAppStack
+STACK_NAME=RrtbAppStack
 API_URL="$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query 'Stacks[0].Outputs[?OutputKey==`MnTestApiUrl`].OutputValue' --output text)"
 RESPONSE="$(curl -s $API_URL)"
 EXPECTED_RESPONSE='{"message":"Hello World"}'
