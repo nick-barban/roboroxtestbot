@@ -11,7 +11,8 @@ class AppStackTest {
 
     @Test
     void testAppStack() {
-        String pathname = AppStack.functionPath();
+        final String rrtbInputLambdaName = "rrtb-input-lambda";
+        String pathname = AppStack.functionPath(rrtbInputLambdaName);
         File file = new File(pathname);
         boolean exists = file.exists();
         if (exists) {

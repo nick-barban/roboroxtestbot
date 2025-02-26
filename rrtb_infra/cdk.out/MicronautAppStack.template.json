@@ -1,6 +1,84 @@
 {
  "Resources": {
-  "micronautfunctionServiceRole926B30A6": {
+  "rrtbbucketA41E38E3": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    },
+    "VersioningConfiguration": {
+     "Status": "Enabled"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtb-bucket/Resource"
+   }
+  },
+  "rrtbbucketPolicyDC07D912": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "rrtbbucketA41E38E3"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "rrtbbucketA41E38E3",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "rrtbbucketA41E38E3",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtb-bucket/Policy/Resource"
+   }
+  },
+  "rrtbinputlambdaServiceRoleD49D4211": {
    "Type": "AWS::IAM::Role",
    "Properties": {
     "AssumeRolePolicyDocument": {
@@ -43,10 +121,10 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "MicronautAppStack/micronaut-function/ServiceRole/Resource"
+    "aws:cdk:path": "MicronautAppStack/rrtb-input-lambda/ServiceRole/Resource"
    }
   },
-  "micronautfunctionServiceRoleDefaultPolicy79AEAF70": {
+  "rrtbinputlambdaServiceRoleDefaultPolicy7B29C601": {
    "Type": "AWS::IAM::Policy",
    "Properties": {
     "PolicyDocument": {
@@ -62,18 +140,18 @@
      ],
      "Version": "2012-10-17"
     },
-    "PolicyName": "micronautfunctionServiceRoleDefaultPolicy79AEAF70",
+    "PolicyName": "rrtbinputlambdaServiceRoleDefaultPolicy7B29C601",
     "Roles": [
      {
-      "Ref": "micronautfunctionServiceRole926B30A6"
+      "Ref": "rrtbinputlambdaServiceRoleD49D4211"
      }
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "MicronautAppStack/micronaut-function/ServiceRole/DefaultPolicy/Resource"
+    "aws:cdk:path": "MicronautAppStack/rrtb-input-lambda/ServiceRole/DefaultPolicy/Resource"
    }
   },
-  "micronautfunction1B56B9AC": {
+  "rrtbinputlambda13AD63C7": {
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Architectures": [
@@ -83,13 +161,13 @@
      "S3Bucket": {
       "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
      },
-     "S3Key": "a574fa0768b73595d8c6dedb5e799d24faf4407fea41fa0300d2435802b3e5cb.jar"
+     "S3Key": "4d226d8285c8415f85247b196ed465e1c95648487600a7efcc330efdf5062230.jar"
     },
     "Handler": "io.micronaut.chatbots.telegram.lambda.Handler",
-    "MemorySize": 2048,
+    "MemorySize": 256,
     "Role": {
      "Fn::GetAtt": [
-      "micronautfunctionServiceRole926B30A6",
+      "rrtbinputlambdaServiceRoleD49D4211",
       "Arn"
      ]
     },
@@ -100,17 +178,17 @@
     }
    },
    "DependsOn": [
-    "micronautfunctionServiceRoleDefaultPolicy79AEAF70",
-    "micronautfunctionServiceRole926B30A6"
+    "rrtbinputlambdaServiceRoleDefaultPolicy7B29C601",
+    "rrtbinputlambdaServiceRoleD49D4211"
    ],
    "Metadata": {
-    "aws:cdk:path": "MicronautAppStack/micronaut-function/Resource",
-    "aws:asset:path": "asset.a574fa0768b73595d8c6dedb5e799d24faf4407fea41fa0300d2435802b3e5cb.jar",
+    "aws:cdk:path": "MicronautAppStack/rrtb-input-lambda/Resource",
+    "aws:asset:path": "asset.4d226d8285c8415f85247b196ed465e1c95648487600a7efcc330efdf5062230.jar",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
   },
-  "micronautfunctionLogRetention242EFD26": {
+  "rrtbinputlambdaLogRetention3301140A": {
    "Type": "Custom::LogRetention",
    "Properties": {
     "ServiceToken": {
@@ -125,7 +203,7 @@
       [
        "/aws/lambda/",
        {
-        "Ref": "micronautfunction1B56B9AC"
+        "Ref": "rrtbinputlambda13AD63C7"
        }
       ]
      ]
@@ -133,31 +211,31 @@
     "RetentionInDays": 7
    },
    "Metadata": {
-    "aws:cdk:path": "MicronautAppStack/micronaut-function/LogRetention/Resource"
+    "aws:cdk:path": "MicronautAppStack/rrtb-input-lambda/LogRetention/Resource"
    }
   },
-  "micronautfunctionFunctionUrl0580D213": {
+  "rrtbinputlambdaFunctionUrl15A0D6B1": {
    "Type": "AWS::Lambda::Url",
    "Properties": {
     "AuthType": "NONE",
     "TargetFunctionArn": {
      "Fn::GetAtt": [
-      "micronautfunction1B56B9AC",
+      "rrtbinputlambda13AD63C7",
       "Arn"
      ]
     }
    },
    "Metadata": {
-    "aws:cdk:path": "MicronautAppStack/micronaut-function/FunctionUrl/Resource"
+    "aws:cdk:path": "MicronautAppStack/rrtb-input-lambda/FunctionUrl/Resource"
    }
   },
-  "micronautfunctioninvokefunctionurl70F82F3A": {
+  "rrtbinputlambdainvokefunctionurlD415E684": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunctionUrl",
     "FunctionName": {
      "Fn::GetAtt": [
-      "micronautfunction1B56B9AC",
+      "rrtbinputlambda13AD63C7",
       "Arn"
      ]
     },
@@ -165,7 +243,7 @@
     "Principal": "*"
    },
    "Metadata": {
-    "aws:cdk:path": "MicronautAppStack/micronaut-function/invoke-function-url"
+    "aws:cdk:path": "MicronautAppStack/rrtb-input-lambda/invoke-function-url"
    }
   },
   "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
@@ -267,15 +345,267 @@
     "aws:asset:property": "Code"
    }
   },
+  "rrtbdailypostlambdaServiceRoleD32021BE": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtb-daily-post-lambda/ServiceRole/Resource"
+   }
+  },
+  "rrtbdailypostlambdaServiceRoleDefaultPolicy3D6AC866": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "rrtbdailypostlambdaServiceRoleDefaultPolicy3D6AC866",
+    "Roles": [
+     {
+      "Ref": "rrtbdailypostlambdaServiceRoleD32021BE"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtb-daily-post-lambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "rrtbdailypostlambda50A850D9": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "2fb0192b7cb277211376fbeb05ee84baa62e4092a97e2752612d507b3ada90fe.jar"
+    },
+    "Handler": "com.nb.SchedulerHandler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "rrtbdailypostlambdaServiceRoleD32021BE",
+      "Arn"
+     ]
+    },
+    "Runtime": "java17",
+    "Timeout": 10,
+    "TracingConfig": {
+     "Mode": "Active"
+    }
+   },
+   "DependsOn": [
+    "rrtbdailypostlambdaServiceRoleDefaultPolicy3D6AC866",
+    "rrtbdailypostlambdaServiceRoleD32021BE"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtb-daily-post-lambda/Resource",
+    "aws:asset:path": "asset.2fb0192b7cb277211376fbeb05ee84baa62e4092a97e2752612d507b3ada90fe.jar",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "rrtbdailypostlambdaLogRetention3B2E18F9": {
+   "Type": "Custom::LogRetention",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+      "Arn"
+     ]
+    },
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "rrtbdailypostlambda50A850D9"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 7
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtb-daily-post-lambda/LogRetention/Resource"
+   }
+  },
+  "RrtbDailyPostLambdaRoleAA1EAE52": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "scheduler.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/RrtbDailyPostLambdaRole/Resource"
+   }
+  },
+  "RrtbScheduleToInvokeLambdasPolicy48E09C5A": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "rrtbdailypostlambda50A850D9",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "RRtbScheduleToInvokeLambdas",
+    "Roles": [
+     {
+      "Ref": "RrtbDailyPostLambdaRoleAA1EAE52"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/RrtbScheduleToInvokeLambdasPolicy/Resource"
+   }
+  },
+  "rrtbScheduleGroup": {
+   "Type": "AWS::Scheduler::ScheduleGroup",
+   "Properties": {
+    "Name": "rrtbLambdaSchedules"
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtbScheduleGroup"
+   }
+  },
+  "rrtbLambdaSchedule": {
+   "Type": "AWS::Scheduler::Schedule",
+   "Properties": {
+    "FlexibleTimeWindow": {
+     "Mode": "OFF"
+    },
+    "GroupName": "rrtbLambdaSchedules",
+    "ScheduleExpression": "rate(5 minute)",
+    "Target": {
+     "Arn": {
+      "Fn::GetAtt": [
+       "rrtbdailypostlambda50A850D9",
+       "Arn"
+      ]
+     },
+     "RoleArn": {
+      "Fn::GetAtt": [
+       "RrtbDailyPostLambdaRoleAA1EAE52",
+       "Arn"
+      ]
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "MicronautAppStack/rrtbLambdaSchedule"
+   }
+  },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/z2OQW/CMAyFfwv31KNDgjMgcZg2gYo4VyY1lWmaVHWyCVX970tT4PQ+v2c9+xPy9RqWC/yTTFdNZvgKw9mjblS0ysFge60QhkOw2rOzan+zb37BpTeT/5QT9S2LRH9UjC0MhTM0BUlPzrB+pL1Eo5JViSLkBbaTxBl2QTfkdyikjKsFvl1dkCfrU2lB4kKvSaX9+GzNtk4HXkHkH+y6p30Mvgt+or2zFc8lX/iLH/kGlpDni7swZ32I/S1BMes/3wCTqRoBAAA="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02QQU8DIRCFf0vv7Ni1ST3bJpoYjc02nhvKjisuCxsGNIbw3wWWWk/vvW+AeeEW2u0W1iv+TY3ox0bJM4Sj42JkCZ0CbSDsvBjRsf27rm6Rg1FS/FxxzUvYccLIFJ/OPYfw4LVw0uh8+M9fzJtVmVc5oJ0kUeKRST5B6IzCPCh63bm4yGhz4kToCO6zMGUGgmczdOhQlz0kPrD3Ci2EdO9Y06M1fmb/QIw5vXo3e8c6JOOtQFYeTf8xSD2UFpdB8i98niveG91LV0o/8S9+097BGtp29UlSNtanIhNCt+gv6wLcTnMBAAA="
    },
    "Metadata": {
     "aws:cdk:path": "MicronautAppStack/CDKMetadata/Default"
    },
    "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "RrtbBucket": {
+   "Value": {
+    "Ref": "rrtbbucketA41E38E3"
+   },
+   "Export": {
+    "Name": "RrtbBucketName"
+   }
+  },
+  "RrtbApiUrl": {
+   "Value": {
+    "Fn::GetAtt": [
+     "rrtbinputlambdaFunctionUrl15A0D6B1",
+     "FunctionUrl"
+    ]
+   },
+   "Export": {
+    "Name": "RrtbApiUrl"
+   }
+  },
+  "RrtbDailyPostLambda": {
+   "Value": {
+    "Fn::GetAtt": [
+     "rrtbdailypostlambda50A850D9",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "RrtbDailyPostLambda"
+   }
+  },
+  "RrtbLambdaSchedule": {
+   "Value": {
+    "Fn::GetAtt": [
+     "rrtbLambdaSchedule",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "RrtbLambdaSchedule"
+   }
   }
  },
  "Mappings": {
@@ -381,19 +711,6 @@
    },
    "us-west-2": {
     "value": "nodejs20.x"
-   }
-  }
- },
- "Outputs": {
-  "MnTestApiUrl": {
-   "Value": {
-    "Fn::GetAtt": [
-     "micronautfunctionFunctionUrl0580D213",
-     "FunctionUrl"
-    ]
-   },
-   "Export": {
-    "Name": "MnTestApiUrl"
    }
   }
  },
