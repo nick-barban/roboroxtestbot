@@ -14,7 +14,6 @@ import software.amazon.awscdk.services.events.Schedule;
 import software.amazon.awscdk.services.events.targets.LambdaFunction;
 import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
-import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
@@ -29,9 +28,7 @@ import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.BucketEncryption;
 import software.constructs.Construct;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 
 public class AppStack extends Stack {
@@ -45,8 +42,6 @@ public class AppStack extends Stack {
 
     public AppStack(final Construct parent, final String id, final StackProps props) {
         super(parent, id, props);
-
-        final List<Role> roles = new ArrayList<>();
 
         final Bucket bucket = Bucket.Builder.create(this, "rrtb-posts")
                 .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
@@ -93,7 +88,7 @@ public class AppStack extends Stack {
                 .handler("com.nb.SchedulerHandler")
                 .environment(new HashMap<>())
                 .code(Code.fromAsset(functionPath(RRTB_DAILY_POST_LAMBDA)))
-                .timeout(Duration.minutes(10))
+                .timeout(Duration.seconds(20))
                 .memorySize(256)
                 .logRetention(RetentionDays.ONE_WEEK)
                 .tracing(Tracing.ACTIVE)
