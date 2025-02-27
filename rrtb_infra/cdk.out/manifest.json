@@ -19,7 +19,7 @@
         "notificationArns": [],
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/0f38c4d71c2cae418e9047b46815043221547594290c11cf3490c79058d26ef5.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9956da70f2601cb0a2eb76e39b09b50aef8ecb25644788fd727430d541a297e4.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -171,6 +171,90 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "rrtbLambdaSchedule"
+          }
+        ],
+        "/RrtbAppStack/rrtb-output-tbot/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "rrtboutputtbotServiceRole6332C612"
+          }
+        ],
+        "/RrtbAppStack/rrtb-output-tbot/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "rrtboutputtbotServiceRoleDefaultPolicy35F1A76C"
+          }
+        ],
+        "/RrtbAppStack/rrtb-output-tbot/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "rrtboutputtbotE2A91ED7"
+          }
+        ],
+        "/RrtbAppStack/rrtb-output-tbot/LogRetention/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "rrtboutputtbotLogRetention31F0AAF2"
+          }
+        ],
+        "/RrtbAppStack/RrtbOutputLambda": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RrtbOutputLambda"
+          }
+        ],
+        "/RrtbAppStack/rrtb_input.fifo": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "rrtbinputfifo"
+          }
+        ],
+        "/RrtbAppStack/RrtbInputQueue": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RrtbInputQueue"
+          }
+        ],
+        "/RrtbAppStack/dlq_rrtb_input.fifo": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "dlqrrtbinputfifo"
+          }
+        ],
+        "/RrtbAppStack/RrtbInputDlq": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RrtbInputDlq"
+          }
+        ],
+        "/RrtbAppStack/rrtb_output.fifo": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "rrtboutputfifo"
+          }
+        ],
+        "/RrtbAppStack/RrtbOutputQueue": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RrtbOutputQueue"
+          }
+        ],
+        "/RrtbAppStack/dlq_rrtb_output.fifo": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "dlqrrtboutputfifo"
+          }
+        ],
+        "/RrtbAppStack/RrtbOutputDlq": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RrtbOutputDlq"
+          }
+        ],
+        "/RrtbAppStack/RrtbOutputQueueMapping": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RrtbOutputQueueMapping"
           }
         ],
         "/RrtbAppStack/CDKMetadata/Default": [

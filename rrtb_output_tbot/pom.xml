@@ -10,6 +10,7 @@
 
     <artifactId>rrtb_output_tbot</artifactId>
     <packaging>jar</packaging>
+    <version>0.1</version>
 
     <properties>
         <packaging>jar</packaging>
@@ -29,7 +30,7 @@
         <dependency>
             <groupId>io.micronaut.validation</groupId>
             <artifactId>micronaut-validation</artifactId>
-            <version>4.8.0</version>
+            <!--            <version>4.8.0</version>-->
             <scope>compile</scope>
         </dependency>
 
@@ -100,7 +101,7 @@
             <plugin>
                 <groupId>io.micronaut.build</groupId>
                 <artifactId>micronaut-maven-plugin</artifactId>
-                <version>4.3.4</version>
+                <version>3.5.4</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

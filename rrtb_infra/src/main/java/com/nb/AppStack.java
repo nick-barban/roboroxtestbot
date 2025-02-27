@@ -17,6 +17,7 @@ import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Architecture;
+import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.FunctionUrl;
@@ -30,9 +31,8 @@ import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.BucketEncryption;
 import software.amazon.awscdk.services.scheduler.CfnSchedule;
 import software.amazon.awscdk.services.scheduler.CfnScheduleGroup;
-import software.constructs.Construct;
 import software.amazon.awscdk.services.sqs.CfnQueue;
-import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
+import software.constructs.Construct;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +44,7 @@ public class AppStack extends Stack {
 
     private static final String RRTB_INPUT_LAMBDA = "rrtb-input-lambda";
     private static final String RRTB_DAILY_POST_LAMBDA = "rrtb-daily-post-lambda";
+    public static final String RRTB_OUTPUT_TBOT = "rrtb-output-tbot";
 
     public AppStack(final Construct parent, final String id) {
         this(parent, id, null);
@@ -147,33 +148,58 @@ public class AppStack extends Stack {
         final Function rrtbOutputLambda = MicronautFunction.create(ApplicationType.FUNCTION,
                         false,
                         this,
-                        "RrtbOutputLambda")
+                        RRTB_OUTPUT_TBOT)
                 .runtime(Runtime.JAVA_17)
                 .handler("com.nb.handler.FunctionRequestHandler")
                 .environment(new HashMap<>())
-                .code(Code.fromAsset("../rrtb_output_tbot/target/" + 
-                    MicronautFunctionFile.builder()
-                        .graalVMNative(false)
-                        .version("0.1")
-                        .archiveBaseName("rrtb_output_tbot")
-                        .buildTool(BuildTool.MAVEN)
-                        .build()))
+                .code(Code.fromAsset(functionPath(RRTB_OUTPUT_TBOT)))
                 .timeout(Duration.seconds(10))
                 .memorySize(256)
                 .logRetention(RetentionDays.ONE_WEEK)
                 .tracing(Tracing.ACTIVE)
                 .architecture(Architecture.ARM_64)
                 .build();
-
         CfnOutput.Builder.create(this, "RrtbOutputLambda")
                 .exportName("RrtbOutputLambda")
                 .value(rrtbOutputLambda.getFunctionArn())
                 .build();
 
         // Create SQS Queue
-        final CfnQueue outputQueue = CfnQueue.Builder.create(this, "RrtbOutputQueue")
+        final CfnQueue inputQueue = CfnQueue.Builder.create(this, "rrtb_input.fifo")
+                .queueName("rrtb_input.fifo")
+                .fifoQueue(true)
+                .build();
+        CfnOutput.Builder.create(this, "RrtbInputQueue")
+                .exportName("RrtbInputQueue")
+                .value(inputQueue.getAttrArn())
+                .build();
+        // Create SQS Queue
+        final CfnQueue inputDlq = CfnQueue.Builder.create(this, "dlq_rrtb_input.fifo")
+                .queueName("dlq_rrtb_input.fifo")
+                .fifoQueue(true)
+                .build();
+        CfnOutput.Builder.create(this, "RrtbInputDlq")
+                .exportName("RrtbInputDlq")
+                .value(inputDlq.getAttrArn())
+                .build();
+
+        // Create SQS Queue
+        final CfnQueue outputQueue = CfnQueue.Builder.create(this, "rrtb_output.fifo")
                 .queueName("rrtb_output.fifo")
                 .fifoQueue(true)
+                .build();
+        CfnOutput.Builder.create(this, "RrtbOutputQueue")
+                .exportName("RrtbOutputQueue")
+                .value(outputQueue.getAttrArn())
+                .build();
+        // Create SQS Queue
+        final CfnQueue outputDlq = CfnQueue.Builder.create(this, "dlq_rrtb_output.fifo")
+                .queueName("dlq_rrtb_output.fifo")
+                .fifoQueue(true)
+                .build();
+        CfnOutput.Builder.create(this, "RrtbOutputDlq")
+                .exportName("RrtbOutputDlq")
+                .value(outputDlq.getAttrArn())
                 .build();
 
         // Grant Lambda permissions to read from SQS
@@ -202,6 +228,8 @@ public class AppStack extends Stack {
             folder = "../rrtb_input_tbot/target/";
         } else if (functionName.equals(RRTB_DAILY_POST_LAMBDA)) {
             folder = "../rrtb_daily_post_lambda/target/";
+        } else if (functionName.equals(RRTB_OUTPUT_TBOT)) {
+            folder = "../rrtb_output_tbot/target/";
         } else {
             throw new IllegalArgumentException("Unknown function name: " + functionName);
         }
@@ -218,6 +246,8 @@ public class AppStack extends Stack {
             builder.archiveBaseName("rrtb_input_tbot");
         } else if (functionName.equals(RRTB_DAILY_POST_LAMBDA)) {
             builder.archiveBaseName("rrtb_daily_post_lambda");
+        } else if (functionName.equals(RRTB_OUTPUT_TBOT)) {
+            builder.archiveBaseName("rrtb_output_tbot");
         } else {
             throw new IllegalArgumentException("Unknown function name: " + functionName);
         }
