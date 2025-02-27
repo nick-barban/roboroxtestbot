@@ -24,7 +24,7 @@ class SchedulerHandlerTest extends AbstractTest {
 
     @Test
     @Ignore("the file does not exist as tests are running before projecg is packaged to jar")
-    void should() throws IOException, InterruptedException {
+    void shouldCheckLocalInfrastructure() throws IOException, InterruptedException {
         org.testcontainers.containers.Container.ExecResult execResult = LOCAL_STACK_CONTAINER.execInContainer(
                 "awslocal", "lambda", "create-function",
                 "--function-name", "lambda-name",
