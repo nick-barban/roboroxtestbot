@@ -35,16 +35,16 @@
         "RrtbAppStack.assets"
       ],
       "metadata": {
-        "/RrtbAppStack/rrtb-bucket/Resource": [
+        "/RrtbAppStack/rrtb-posts/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "rrtbbucketA41E38E3"
+            "data": "rrtbposts27CA6C36"
           }
         ],
-        "/RrtbAppStack/rrtb-bucket/Policy/Resource": [
+        "/RrtbAppStack/rrtb-posts/Policy/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "rrtbbucketPolicyDC07D912"
+            "data": "rrtbpostsPolicy10D5C8F2"
           }
         ],
         "/RrtbAppStack/RrtbBucket": [
@@ -149,28 +149,16 @@
             "data": "RrtbDailyPostLambda"
           }
         ],
-        "/RrtbAppStack/RrtbDailyPostLambdaRole/Resource": [
+        "/RrtbAppStack/rrtb-daily-rule/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "RrtbDailyPostLambdaRoleAA1EAE52"
+            "data": "rrtbdailyruleE57E9924"
           }
         ],
-        "/RrtbAppStack/RrtbScheduleToInvokeLambdasPolicy/Resource": [
+        "/RrtbAppStack/rrtb-daily-rule/AllowEventRuleRrtbAppStackrrtbdailypostlambdaF8BB91A7": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "RrtbScheduleToInvokeLambdasPolicy48E09C5A"
-          }
-        ],
-        "/RrtbAppStack/rrtbScheduleGroup": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "rrtbScheduleGroup"
-          }
-        ],
-        "/RrtbAppStack/rrtbLambdaSchedule": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "rrtbLambdaSchedule"
+            "data": "rrtbdailyruleAllowEventRuleRrtbAppStackrrtbdailypostlambdaF8BB91A7B6E3DF5B"
           }
         ],
         "/RrtbAppStack/rrtb-output-tbot/ServiceRole/Resource": [

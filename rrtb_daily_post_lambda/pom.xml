@@ -32,7 +32,6 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-lambda-java-events</artifactId>
-      <!--      <version>3.14.0</version>-->
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -45,11 +44,16 @@
       <artifactId>micronaut-function-aws</artifactId>
       <scope>compile</scope>
     </dependency>
-    <!--<dependency>
-      <groupId>io.micronaut.crac</groupId>
-      <artifactId>micronaut-crac</artifactId>
+    <dependency>
+      <groupId>io.micronaut.objectstorage</groupId>
+      <artifactId>micronaut-object-storage-aws</artifactId>
+<!--      <scope>provided</scope>-->
+    </dependency>
+    <dependency>
+      <groupId>io.micronaut.jms</groupId>
+      <artifactId>micronaut-jms-sqs</artifactId>
       <scope>compile</scope>
-    </dependency>-->
+    </dependency>
     <dependency>
       <groupId>io.micronaut.serde</groupId>
       <artifactId>micronaut-serde-jackson</artifactId>
@@ -60,18 +64,6 @@
       <artifactId>logback-classic</artifactId>
       <scope>runtime</scope>
     </dependency>
-
-
-    <!--<dependency>
-      <groupId>io.micronaut</groupId>
-      <artifactId>micronaut-jackson-databind</artifactId>
-    </dependency>-->
-
-    <!--<dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <scope>provided</scope>
-    </dependency>-->
 
     <dependency>
       <groupId>org.yaml</groupId>
@@ -85,7 +77,6 @@
       <version>1.1.1</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>io.micronaut.test</groupId>
       <artifactId>micronaut-test-junit5</artifactId>
@@ -122,6 +113,10 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>localstack</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.micronaut.chatbots</groupId>
+      <artifactId>micronaut-chatbots-telegram-api</artifactId>
     </dependency>
   </dependencies>
 

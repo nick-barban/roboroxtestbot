@@ -9,13 +9,14 @@ import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.services.events.Rule;
+import software.amazon.awscdk.services.events.Schedule;
+import software.amazon.awscdk.services.events.targets.LambdaFunction;
 import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
-import software.amazon.awscdk.services.iam.Policy;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.Role;
-import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 import software.amazon.awscdk.services.lambda.Code;
@@ -37,7 +38,6 @@ import software.constructs.Construct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 
 public class AppStack extends Stack {
@@ -53,9 +53,7 @@ public class AppStack extends Stack {
     public AppStack(final Construct parent, final String id, final StackProps props) {
         super(parent, id, props);
 
-        final List<Role> roles = new ArrayList<>();
-
-        final Bucket bucket = Bucket.Builder.create(this, "rrtb-bucket")
+        final Bucket bucket = Bucket.Builder.create(this, "rrtb-posts")
                 .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
                 .encryption(BucketEncryption.S3_MANAGED)
                 .enforceSsl(true)
@@ -100,50 +98,24 @@ public class AppStack extends Stack {
                 .handler("com.nb.SchedulerHandler")
                 .environment(new HashMap<>())
                 .code(Code.fromAsset(functionPath(RRTB_DAILY_POST_LAMBDA)))
-                .timeout(Duration.seconds(10))
+                .timeout(Duration.seconds(20))
                 .memorySize(256)
                 .logRetention(RetentionDays.ONE_WEEK)
                 .tracing(Tracing.ACTIVE)
                 .architecture(Architecture.ARM_64)
                 .build();
+        final IManagedPolicy s3ReadOnlyPolicy = ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess");
+        Objects.requireNonNull(rrtbDailyPostLambda.getRole()).addManagedPolicy(s3ReadOnlyPolicy);
+        Objects.requireNonNull(rrtbDailyPostLambda.getRole()).addManagedPolicy(sqsCreateQueuePolicy);
         CfnOutput.Builder.create(this, "RrtbDailyPostLambda")
                 .exportName("RrtbDailyPostLambda")
                 .value(rrtbDailyPostLambda.getFunctionArn())
                 .build();
-        // Create Role
-        final Role rrtbDailyPostLambdaRole = Role.Builder.create(this, "RrtbDailyPostLambdaRole")
-                .assumedBy(new ServicePrincipal("scheduler.amazonaws.com"))
+        final Rule rule = Rule.Builder.create(this, "rrtb-daily-rule")
+                // TODO by nickbarban: 26/02/25 Should be replaced with cron from env
+                .schedule(Schedule.rate(Duration.minutes(1)))
                 .build();
-        roles.add(rrtbDailyPostLambdaRole);
-        // Create Policy
-        final PolicyStatement invokeFunctionStatement = PolicyStatement.Builder.create()
-                .effect(Effect.ALLOW)
-                .actions(List.of("lambda:InvokeFunction"))
-                .resources(List.of(rrtbDailyPostLambda.getFunctionArn()))
-                .build();
-        final Policy policy = Policy.Builder.create(this, "RrtbScheduleToInvokeLambdasPolicy")
-                .roles(roles)
-                .policyName("RRtbScheduleToInvokeLambdas")
-                .statements(List.of(invokeFunctionStatement))
-                .build();
-        final CfnScheduleGroup scheduleGroup = CfnScheduleGroup.Builder.create(this, "rrtbScheduleGroup")
-                .name("rrtbLambdaScheduleGroup")
-                .build();
-        // Create rate based schedule every 5 minutes using custom group name
-        CfnSchedule cfnSchedule = CfnSchedule.Builder.create(this, "rrtbLambdaSchedule")
-                // no flexible time window for this schedule
-                .flexibleTimeWindow(CfnSchedule.FlexibleTimeWindowProperty.builder()
-                        .mode("OFF").build())
-                .groupName(scheduleGroup.getName())
-                // TODO by nickbarban: 24/02/25 Should be extracted to env variable
-                .scheduleExpression("rate(5 minute)")
-                //create target builder and set Lambda ARN and role created above ARN
-                .target(CfnSchedule.TargetProperty.builder()
-                        .arn(rrtbDailyPostLambda.getFunctionArn())
-                        .roleArn(rrtbDailyPostLambdaRole.getRoleArn())
-                        .build())
-                .build();
-
+        rule.addTarget(LambdaFunction.Builder.create(rrtbDailyPostLambda).build());
         // Create output Lambda function
         final Function rrtbOutputLambda = MicronautFunction.create(ApplicationType.FUNCTION,
                         false,
@@ -206,12 +178,12 @@ public class AppStack extends Stack {
         final PolicyStatement sqsPolicy = PolicyStatement.Builder.create()
                 .effect(Effect.ALLOW)
                 .actions(Arrays.asList(
-                    "sqs:ReceiveMessage",
-                    "sqs:DeleteMessage",
-                    "sqs:GetQueueAttributes"))
+                        "sqs:ReceiveMessage",
+                        "sqs:DeleteMessage",
+                        "sqs:GetQueueAttributes"))
                 .resources(Arrays.asList(outputQueue.getAttrArn()))
                 .build();
-        
+
         rrtbOutputLambda.addToRolePolicy(sqsPolicy);
 
         // Add SQS trigger to Lambda
