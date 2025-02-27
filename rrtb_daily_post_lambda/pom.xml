@@ -50,6 +50,11 @@
 <!--      <scope>provided</scope>-->
     </dependency>
     <dependency>
+      <groupId>io.micronaut.jms</groupId>
+      <artifactId>micronaut-jms-sqs</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>io.micronaut.serde</groupId>
       <artifactId>micronaut-serde-jackson</artifactId>
       <scope>compile</scope>
@@ -108,6 +113,10 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>localstack</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.micronaut.chatbots</groupId>
+      <artifactId>micronaut-chatbots-telegram-api</artifactId>
     </dependency>
   </dependencies>
 
