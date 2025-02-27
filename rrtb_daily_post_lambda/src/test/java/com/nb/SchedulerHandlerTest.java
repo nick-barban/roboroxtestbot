@@ -1,7 +1,7 @@
 package com.nb;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.utility.MountableFile;
 
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 class SchedulerHandlerTest extends AbstractTest {
 
     @Test
-    @Ignore("the file does not exist as tests are running before projecg is packaged to jar")
+    @Disabled("the file does not exist as tests are running before projecg is packaged to jar")
     void shouldCreateMountableFileforHostFileOnWindows() {
         final MountableFile given = MountableFile.forHostPath("target/rrtb_daily_post_lambda-0.1.jar");
 
@@ -23,7 +23,7 @@ class SchedulerHandlerTest extends AbstractTest {
     }
 
     @Test
-    @Ignore("the file does not exist as tests are running before projecg is packaged to jar")
+    @Disabled("the file does not exist as tests are running before projecg is packaged to jar")
     void shouldCheckLocalInfrastructure() throws IOException, InterruptedException {
         org.testcontainers.containers.Container.ExecResult execResult = LOCAL_STACK_CONTAINER.execInContainer(
                 "awslocal", "lambda", "create-function",
