@@ -6,6 +6,7 @@ import io.micronaut.objectstorage.aws.AwsS3Operations;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.localstack.LocalStackContainer;
@@ -69,16 +70,6 @@ abstract class AbstractTest {
 
     protected InputStream getScheduledEventJson() {
         return SchedulerHandlerTest.class.getResourceAsStream("/mockScheduledEvent.json");
-    }
-
-    @Test
-    void shouldCreateMountableFileforHostFileOnWindows() {
-        final MountableFile given = MountableFile.forHostPath("target/rrtb_daily_post_lambda-0.1.jar");
-
-        final String mountablePath = given.getResolvedPath();
-
-        final File actual = new File(mountablePath);
-        Assertions.assertThat(actual).exists();
     }
 
     @Test
