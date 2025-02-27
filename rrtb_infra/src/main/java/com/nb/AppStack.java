@@ -93,7 +93,7 @@ public class AppStack extends Stack {
                 .handler("com.nb.SchedulerHandler")
                 .environment(new HashMap<>())
                 .code(Code.fromAsset(functionPath(RRTB_DAILY_POST_LAMBDA)))
-                .timeout(Duration.seconds(10))
+                .timeout(Duration.minutes(10))
                 .memorySize(256)
                 .logRetention(RetentionDays.ONE_WEEK)
                 .tracing(Tracing.ACTIVE)

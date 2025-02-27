@@ -10,7 +10,6 @@ micronaut:
     sqs:
       enabled: true
 
-
 app:
   queue:
     input:

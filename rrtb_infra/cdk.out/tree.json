@@ -276,7 +276,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "c2152aefccd360765cc50acbeeaa270ddd94a47079c4aa4a4188c94676bb21cc.jar"
+                      "s3Key": "4c13505d0f23d2db44a1a5a13c6615f9fcd2a04427e759ee7e4220951693f9be.jar"
                     },
                     "handler": "io.micronaut.chatbots.telegram.lambda.Handler",
                     "memorySize": 256,
@@ -695,7 +695,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "79c0a5f28a77306a1b862d22b8c7628845086f166e6e7a7040b484394337d63a.jar"
+                      "s3Key": "bb116f0dcfd0e3c9130dc63e2bc922450939b3d6422259c26df5be45b69991c2.jar"
                     },
                     "handler": "com.nb.SchedulerHandler",
                     "memorySize": 256,
