@@ -101,6 +101,7 @@ public class AppStack extends Stack {
                 .build();
         final IManagedPolicy s3ReadOnlyPolicy = ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess");
         Objects.requireNonNull(rrtbDailyPostLambda.getRole()).addManagedPolicy(s3ReadOnlyPolicy);
+        Objects.requireNonNull(rrtbDailyPostLambda.getRole()).addManagedPolicy(sqsCreateQueuePolicy);
         CfnOutput.Builder.create(this, "RrtbDailyPostLambda")
                 .exportName("RrtbDailyPostLambda")
                 .value(rrtbDailyPostLambda.getFunctionArn())
