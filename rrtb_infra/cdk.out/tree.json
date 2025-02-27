@@ -276,7 +276,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "4c13505d0f23d2db44a1a5a13c6615f9fcd2a04427e759ee7e4220951693f9be.jar"
+                      "s3Key": "f7502404b7c22d9f5f51c3e592136d34a98c1a621741fabd6d1532151e960052.jar"
                     },
                     "handler": "io.micronaut.chatbots.telegram.lambda.Handler",
                     "memorySize": 256,
@@ -695,7 +695,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "bb116f0dcfd0e3c9130dc63e2bc922450939b3d6422259c26df5be45b69991c2.jar"
+                      "s3Key": "78893eb060eeefdc1ed97a6efffd4b0620cad1a56abbfb53555ebe1d1caf5ec0.jar"
                     },
                     "handler": "com.nb.SchedulerHandler",
                     "memorySize": 256,
@@ -706,7 +706,7 @@
                       ]
                     },
                     "runtime": "java17",
-                    "timeout": 10,
+                    "timeout": 600,
                     "tracingConfig": {
                       "mode": "Active"
                     }

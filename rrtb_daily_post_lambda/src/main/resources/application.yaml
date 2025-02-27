@@ -15,6 +15,9 @@ micronaut:
       posts:
         bucket: ${POSTS_BUCKET_NAME}
         enabled: true
+  jms:
+    sqs:
+      enabled: true
 
 app:
   queue:
