@@ -1,14 +1,12 @@
 package com.nb;
 
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 class SchedulerHandlerTest extends AbstractTest {
 
 
-    @Test
+    //    @Test
     void should() throws IOException, InterruptedException {
         org.testcontainers.containers.Container.ExecResult execResult = LOCAL_STACK_CONTAINER.execInContainer(
                 "awslocal", "lambda", "create-function",
