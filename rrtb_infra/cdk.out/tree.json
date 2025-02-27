@@ -8,13 +8,13 @@
         "id": "RrtbAppStack",
         "path": "RrtbAppStack",
         "children": {
-          "rrtb-bucket": {
-            "id": "rrtb-bucket",
-            "path": "RrtbAppStack/rrtb-bucket",
+          "rrtb-posts": {
+            "id": "rrtb-posts",
+            "path": "RrtbAppStack/rrtb-posts",
             "children": {
               "Resource": {
                 "id": "Resource",
-                "path": "RrtbAppStack/rrtb-bucket/Resource",
+                "path": "RrtbAppStack/rrtb-posts/Resource",
                 "attributes": {
                   "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
                   "aws:cdk:cloudformation:props": {
@@ -45,16 +45,16 @@
               },
               "Policy": {
                 "id": "Policy",
-                "path": "RrtbAppStack/rrtb-bucket/Policy",
+                "path": "RrtbAppStack/rrtb-posts/Policy",
                 "children": {
                   "Resource": {
                     "id": "Resource",
-                    "path": "RrtbAppStack/rrtb-bucket/Policy/Resource",
+                    "path": "RrtbAppStack/rrtb-posts/Policy/Resource",
                     "attributes": {
                       "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
                       "aws:cdk:cloudformation:props": {
                         "bucket": {
-                          "Ref": "rrtbbucketA41E38E3"
+                          "Ref": "rrtbposts27CA6C36"
                         },
                         "policyDocument": {
                           "Statement": [
@@ -72,7 +72,7 @@
                               "Resource": [
                                 {
                                   "Fn::GetAtt": [
-                                    "rrtbbucketA41E38E3",
+                                    "rrtbposts27CA6C36",
                                     "Arn"
                                   ]
                                 },
@@ -82,7 +82,7 @@
                                     [
                                       {
                                         "Fn::GetAtt": [
-                                          "rrtbbucketA41E38E3",
+                                          "rrtbposts27CA6C36",
                                           "Arn"
                                         ]
                                       },
@@ -276,7 +276,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "6661f98e4de2f3f6b0c3bf7a122b57ecc2f520584d1b03add8cca1c56bfd4bea.jar"
+                      "s3Key": "7e910462b8635822276c38c7cc84cb7dd01dfc99898cba72eb2bb0bc8308735b.jar"
                     },
                     "handler": "io.micronaut.chatbots.telegram.lambda.Handler",
                     "memorySize": 256,
@@ -587,6 +587,18 @@
                                 ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
                               ]
                             ]
+                          },
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "arn:",
+                                {
+                                  "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/AmazonS3ReadOnlyAccess"
+                              ]
+                            ]
                           }
                         ]
                       }
@@ -683,7 +695,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "80d13730690bce8d6625b6797a881766d09e98ec22d0e7c2b04db87708506ace.jar"
+                      "s3Key": "79952208cb556ea32ee4f0bb969762a32216be2b04a7f0c55dd8a8a1e46f8557.jar"
                     },
                     "handler": "com.nb.SchedulerHandler",
                     "memorySize": 256,
@@ -745,136 +757,66 @@
               "version": "2.166.0"
             }
           },
-          "RrtbDailyPostLambdaRole": {
-            "id": "RrtbDailyPostLambdaRole",
-            "path": "RrtbAppStack/RrtbDailyPostLambdaRole",
-            "children": {
-              "ImportRrtbDailyPostLambdaRole": {
-                "id": "ImportRrtbDailyPostLambdaRole",
-                "path": "RrtbAppStack/RrtbDailyPostLambdaRole/ImportRrtbDailyPostLambdaRole",
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.Resource",
-                  "version": "2.166.0"
-                }
-              },
-              "Resource": {
-                "id": "Resource",
-                "path": "RrtbAppStack/RrtbDailyPostLambdaRole/Resource",
-                "attributes": {
-                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
-                  "aws:cdk:cloudformation:props": {
-                    "assumeRolePolicyDocument": {
-                      "Statement": [
-                        {
-                          "Action": "sts:AssumeRole",
-                          "Effect": "Allow",
-                          "Principal": {
-                            "Service": "scheduler.amazonaws.com"
-                          }
-                        }
-                      ],
-                      "Version": "2012-10-17"
-                    }
-                  }
-                },
-                "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
-                  "version": "2.166.0"
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_iam.Role",
-              "version": "2.166.0"
-            }
-          },
-          "RrtbScheduleToInvokeLambdasPolicy": {
-            "id": "RrtbScheduleToInvokeLambdasPolicy",
-            "path": "RrtbAppStack/RrtbScheduleToInvokeLambdasPolicy",
+          "rrtb-daily-rule": {
+            "id": "rrtb-daily-rule",
+            "path": "RrtbAppStack/rrtb-daily-rule",
             "children": {
               "Resource": {
                 "id": "Resource",
-                "path": "RrtbAppStack/RrtbScheduleToInvokeLambdasPolicy/Resource",
+                "path": "RrtbAppStack/rrtb-daily-rule/Resource",
                 "attributes": {
-                  "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                  "aws:cdk:cloudformation:type": "AWS::Events::Rule",
                   "aws:cdk:cloudformation:props": {
-                    "policyDocument": {
-                      "Statement": [
-                        {
-                          "Action": "lambda:InvokeFunction",
-                          "Effect": "Allow",
-                          "Resource": {
-                            "Fn::GetAtt": [
-                              "rrtbdailypostlambda50A850D9",
-                              "Arn"
-                            ]
-                          }
-                        }
-                      ],
-                      "Version": "2012-10-17"
-                    },
-                    "policyName": "RRtbScheduleToInvokeLambdas",
-                    "roles": [
+                    "scheduleExpression": "rate(1 minute)",
+                    "state": "ENABLED",
+                    "targets": [
                       {
-                        "Ref": "RrtbDailyPostLambdaRoleAA1EAE52"
+                        "id": "Target0",
+                        "arn": {
+                          "Fn::GetAtt": [
+                            "rrtbdailypostlambda50A850D9",
+                            "Arn"
+                          ]
+                        }
                       }
                     ]
                   }
                 },
                 "constructInfo": {
-                  "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                  "fqn": "aws-cdk-lib.aws_events.CfnRule",
+                  "version": "2.166.0"
+                }
+              },
+              "AllowEventRuleRrtbAppStackrrtbdailypostlambdaF8BB91A7": {
+                "id": "AllowEventRuleRrtbAppStackrrtbdailypostlambdaF8BB91A7",
+                "path": "RrtbAppStack/rrtb-daily-rule/AllowEventRuleRrtbAppStackrrtbdailypostlambdaF8BB91A7",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "rrtbdailypostlambda50A850D9",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "events.amazonaws.com",
+                    "sourceArn": {
+                      "Fn::GetAtt": [
+                        "rrtbdailyruleE57E9924",
+                        "Arn"
+                      ]
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
                   "version": "2.166.0"
                 }
               }
             },
             "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_iam.Policy",
-              "version": "2.166.0"
-            }
-          },
-          "rrtbScheduleGroup": {
-            "id": "rrtbScheduleGroup",
-            "path": "RrtbAppStack/rrtbScheduleGroup",
-            "attributes": {
-              "aws:cdk:cloudformation:type": "AWS::Scheduler::ScheduleGroup",
-              "aws:cdk:cloudformation:props": {
-                "name": "rrtbLambdaScheduleGroup"
-              }
-            },
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_scheduler.CfnScheduleGroup",
-              "version": "2.166.0"
-            }
-          },
-          "rrtbLambdaSchedule": {
-            "id": "rrtbLambdaSchedule",
-            "path": "RrtbAppStack/rrtbLambdaSchedule",
-            "attributes": {
-              "aws:cdk:cloudformation:type": "AWS::Scheduler::Schedule",
-              "aws:cdk:cloudformation:props": {
-                "flexibleTimeWindow": {
-                  "mode": "OFF"
-                },
-                "groupName": "rrtbLambdaScheduleGroup",
-                "scheduleExpression": "rate(5 minute)",
-                "target": {
-                  "arn": {
-                    "Fn::GetAtt": [
-                      "rrtbdailypostlambda50A850D9",
-                      "Arn"
-                    ]
-                  },
-                  "roleArn": {
-                    "Fn::GetAtt": [
-                      "RrtbDailyPostLambdaRoleAA1EAE52",
-                      "Arn"
-                    ]
-                  }
-                }
-              }
-            },
-            "constructInfo": {
-              "fqn": "aws-cdk-lib.aws_scheduler.CfnSchedule",
+              "fqn": "aws-cdk-lib.aws_events.Rule",
               "version": "2.166.0"
             }
           },

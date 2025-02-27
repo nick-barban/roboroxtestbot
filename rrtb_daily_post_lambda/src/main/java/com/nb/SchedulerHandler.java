@@ -2,6 +2,7 @@ package com.nb;
 
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.nb.service.FileService;
+import io.micronaut.core.util.StringUtils;
 import io.micronaut.function.aws.MicronautRequestHandler;
 import io.micronaut.serde.annotation.SerdeImport;
 import jakarta.inject.Inject;
@@ -22,8 +23,16 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
     public Void execute(ScheduledEvent input) {
         LOG.info("Scheduled handler invocation");
 
-        final Map<String, String> posts = fileService.readDailyPosts();
+        final Map<String, String> posts = fileService.readPosts();
         LOG.info("Read {} posts", posts.size());
+
+        posts.forEach((name, post) -> {
+            if (StringUtils.isEmpty(post)) {
+                LOG.warn("No post for name {}", name);
+            } else {
+                LOG.info("{} contains {}", name, post);
+            }
+        });
 
         return null;
     }
