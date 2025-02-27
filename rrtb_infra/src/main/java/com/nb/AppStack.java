@@ -31,8 +31,11 @@ import software.amazon.awscdk.services.s3.BucketEncryption;
 import software.amazon.awscdk.services.scheduler.CfnSchedule;
 import software.amazon.awscdk.services.scheduler.CfnScheduleGroup;
 import software.constructs.Construct;
+import software.amazon.awscdk.services.sqs.CfnQueue;
+import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -138,6 +141,58 @@ public class AppStack extends Stack {
                         .arn(rrtbDailyPostLambda.getFunctionArn())
                         .roleArn(rrtbDailyPostLambdaRole.getRoleArn())
                         .build())
+                .build();
+
+        // Create output Lambda function
+        final Function rrtbOutputLambda = MicronautFunction.create(ApplicationType.FUNCTION,
+                        false,
+                        this,
+                        "RrtbOutputLambda")
+                .runtime(Runtime.JAVA_17)
+                .handler("com.nb.handler.FunctionRequestHandler")
+                .environment(new HashMap<>())
+                .code(Code.fromAsset("../rrtb_output_tbot/target/" + 
+                    MicronautFunctionFile.builder()
+                        .graalVMNative(false)
+                        .version("0.1")
+                        .archiveBaseName("rrtb_output_tbot")
+                        .buildTool(BuildTool.MAVEN)
+                        .build()))
+                .timeout(Duration.seconds(10))
+                .memorySize(256)
+                .logRetention(RetentionDays.ONE_WEEK)
+                .tracing(Tracing.ACTIVE)
+                .architecture(Architecture.ARM_64)
+                .build();
+
+        CfnOutput.Builder.create(this, "RrtbOutputLambda")
+                .exportName("RrtbOutputLambda")
+                .value(rrtbOutputLambda.getFunctionArn())
+                .build();
+
+        // Create SQS Queue
+        final CfnQueue outputQueue = CfnQueue.Builder.create(this, "RrtbOutputQueue")
+                .queueName("rrtb_output.fifo")
+                .fifoQueue(true)
+                .build();
+
+        // Grant Lambda permissions to read from SQS
+        final PolicyStatement sqsPolicy = PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList(
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes"))
+                .resources(Arrays.asList(outputQueue.getAttrArn()))
+                .build();
+        
+        rrtbOutputLambda.addToRolePolicy(sqsPolicy);
+
+        // Add SQS trigger to Lambda
+        final CfnEventSourceMapping eventSourceMapping = CfnEventSourceMapping.Builder.create(this, "RrtbOutputQueueMapping")
+                .functionName(rrtbOutputLambda.getFunctionName())
+                .eventSourceArn(outputQueue.getAttrArn())
+                .batchSize(1)
                 .build();
     }
 
