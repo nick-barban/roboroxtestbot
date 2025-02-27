@@ -9,4 +9,9 @@ micronaut:
     serialization:
       always-serialize-errors-as-list: true
       inclusion: NON_EMPTY
-
+  object-storage:
+    aws:
+      enabled: true
+      posts:
+        bucket: ${POSTS_BUCKET_NAME}
+        enabled: true

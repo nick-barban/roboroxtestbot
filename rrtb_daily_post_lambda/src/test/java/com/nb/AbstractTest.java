@@ -1,6 +1,10 @@
 package com.nb;
 
+import io.micronaut.context.BeanContext;
+import io.micronaut.objectstorage.aws.AwsS3Configuration;
+import io.micronaut.objectstorage.aws.AwsS3Operations;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
+import jakarta.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -11,7 +15,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
@@ -26,6 +29,9 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @TestInstance(PER_CLASS)
 @Testcontainers
 abstract class AbstractTest {
+
+    @Inject
+    BeanContext ctx;
 
     private static final LocalStackContainer.EnabledService EVENT_BRIDGE = new LocalStackContainer.EnabledService() {
         @Override
@@ -66,12 +72,23 @@ abstract class AbstractTest {
     }
 
     @Test
-    void forHostFileOnWindows() {
+    void shouldCreateMountableFileforHostFileOnWindows() {
         final MountableFile given = MountableFile.forHostPath("target/rrtb_daily_post_lambda-0.1.jar");
 
         final String mountablePath = given.getResolvedPath();
 
         final File actual = new File(mountablePath);
         Assertions.assertThat(actual).exists();
+    }
+
+    @Test
+    public void shouldCheckBeansExist() {
+        Assertions.assertThat(ctx.containsBean(AwsS3Operations.class)).isTrue();
+    }
+
+    @Test
+    public void shouldCreateAwsS3Configuration() {
+        final AwsS3Configuration configuration = new AwsS3Configuration("posts");
+        configuration.setBucket("invalid_bucket");
     }
 }
