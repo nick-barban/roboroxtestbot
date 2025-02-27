@@ -78,6 +78,16 @@ abstract class AbstractTest {
     }
 
     @Test
+    void shouldCreateMountableFileforHostFileOnWindows() {
+        final MountableFile given = MountableFile.forHostPath("target/rrtb_daily_post_lambda-0.1.jar");
+
+        final String mountablePath = given.getResolvedPath();
+
+        final File actual = new File(mountablePath);
+        Assertions.assertThat(actual).exists();
+    }
+
+    @Test
     public void shouldCreateAwsS3Configuration() {
         final AwsS3Configuration configuration = new AwsS3Configuration("posts");
         configuration.setBucket("invalid_bucket");
