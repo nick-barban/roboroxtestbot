@@ -10,7 +10,7 @@ public class ChatRepositoryImpl implements ChatRepository {
     @Override
     public Optional<Chat> getChatByName(String chatName) {
         final Chat chat = new Chat();
-        chat.setId(-1002314637556L);
+        chat.setId(2314637556L);
         chat.setTitle(chatName);
         chat.setType("supergroup");
         return Optional.of(chat);

@@ -42,6 +42,7 @@ public class TelegramService extends TelegramLongPollingBot {
     }
 
     public void sendMessage(Message message) {
+        LOG.debug("Telegram bot configuration:\n\ttoken={}\n\tusername={}", this.config.getBotToken(), this.config.getBotUsername());
         sendMessage(message.getText(), message.getChatId());
     }
 }
