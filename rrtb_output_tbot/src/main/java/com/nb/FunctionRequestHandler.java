@@ -1,4 +1,4 @@
-package com.nb.handler;
+package com.nb;
 
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.function.aws.MicronautRequestHandler;

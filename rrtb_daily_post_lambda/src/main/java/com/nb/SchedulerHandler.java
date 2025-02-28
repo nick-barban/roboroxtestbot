@@ -17,8 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Map;
-import java.util.UUID;
 
 @SerdeImport(ScheduledEvent.class)
 public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Void> {
@@ -68,7 +68,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
             message.setText(text);
             update.setMessage(message);
             final String msg = objectMapper.writeValueAsString(update);
-            producer.sendOutput(msg, String.valueOf(chatId), UUID.randomUUID().toString());
+            producer.sendOutput(msg, String.valueOf(chatId), "[%s]%s".formatted(name, LocalDate.now()));
             LOG.info("Send post: {} for chat: {} to output queue", name, chatId);
         } catch (IOException e) {
             LOG.error("Could not send post: %s for chat: %d".formatted(name, chatId), e);
