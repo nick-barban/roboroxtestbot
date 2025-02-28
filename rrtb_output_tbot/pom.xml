@@ -23,11 +23,6 @@
     <dependencies>
         <!-- Micronaut Core -->
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-events</artifactId>
-            <version>3.11.0</version>
-        </dependency>
-        <dependency>
             <groupId>io.micronaut</groupId>
             <artifactId>micronaut-inject</artifactId>
             <scope>compile</scope>
