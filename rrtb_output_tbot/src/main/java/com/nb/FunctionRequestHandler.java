@@ -32,6 +32,7 @@ public class FunctionRequestHandler extends MicronautRequestHandler<SQSEvent, Vo
                 try {
                     final Update update = objectMapper.readValue(message.getBody(), Update.class);
                     telegramService.sendMessage(update.getMessage());
+                    LOG.info("Message {} was sent to chat: {}", update.getMessage().getMessageId(), update.getMessage().getChat().getId());
                 } catch (IOException e) {
                     LOG.error("Error processing message: %s".formatted(message.getMessageId()), e);
                 }
