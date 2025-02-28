@@ -5,22 +5,21 @@ import com.nb.service.TelegramService;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.function.aws.MicronautRequestHandler;
 import io.micronaut.json.JsonMapper;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.IOException;
 
+@SuppressWarnings({"java:S6813", "unused"})
 public class FunctionRequestHandler extends MicronautRequestHandler<SQSEvent, Void> {
     private static final Logger LOG = LoggerFactory.getLogger(FunctionRequestHandler.class);
 
-    private final TelegramService telegramService;
-    private final JsonMapper objectMapper;
-
-    public FunctionRequestHandler(TelegramService telegramService, JsonMapper objectMapper) {
-        this.telegramService = telegramService;
-        this.objectMapper = objectMapper;
-    }
+    @Inject
+    private TelegramService telegramService;
+    @Inject
+    private JsonMapper objectMapper;
 
     @Override
     public Void execute(@Nullable SQSEvent event) {
