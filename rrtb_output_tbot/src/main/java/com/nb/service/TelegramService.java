@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -29,14 +30,18 @@ public class TelegramService extends TelegramLongPollingBot {
         return config.getBotUsername();
     }
 
-    public void sendMessage(String message) {
+    private void sendMessage(String message, Long chatId) {
         try {
             SendMessage sendMessage = new SendMessage();
-            sendMessage.setChatId(config.getChatId());
+            sendMessage.setChatId(chatId);
             sendMessage.setText(message);
             execute(sendMessage);
         } catch (TelegramApiException e) {
             LOG.error("Error sending message to Telegram", e);
         }
     }
-} 
+
+    public void sendMessage(Message message) {
+        sendMessage(message.getText(), message.getChatId());
+    }
+}

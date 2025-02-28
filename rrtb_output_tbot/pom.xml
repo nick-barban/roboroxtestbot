@@ -30,7 +30,6 @@
         <dependency>
             <groupId>io.micronaut.validation</groupId>
             <artifactId>micronaut-validation</artifactId>
-            <!--            <version>4.8.0</version>-->
             <scope>compile</scope>
         </dependency>
 
@@ -56,6 +55,10 @@
             <artifactId>aws-lambda-java-events</artifactId>
             <version>3.11.0</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-json-core</artifactId>
         </dependency>
 
         <!-- JMS -->
