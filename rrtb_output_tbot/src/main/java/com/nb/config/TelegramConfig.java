@@ -8,7 +8,6 @@ import io.micronaut.context.annotation.Context;
 public class TelegramConfig {
     private String botToken;
     private String botUsername;
-    private String chatId;
 
     public String getBotToken() {
         return botToken;
@@ -25,12 +24,4 @@ public class TelegramConfig {
     public void setBotUsername(String botUsername) {
         this.botUsername = botUsername;
     }
-
-    public String getChatId() {
-        return chatId;
-    }
-
-    public void setChatId(String chatId) {
-        this.chatId = chatId;
-    }
-} 
+}
