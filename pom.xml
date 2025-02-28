@@ -16,6 +16,7 @@
     <modules>
         <module>rrtb_input_tbot</module>
         <module>rrtb_daily_post_lambda</module>
+        <module>rrtb_output_tbot</module>
         <module>rrtb_infra</module>
     </modules>
 </project>

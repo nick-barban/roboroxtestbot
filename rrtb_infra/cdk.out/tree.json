@@ -276,7 +276,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "f7502404b7c22d9f5f51c3e592136d34a98c1a621741fabd6d1532151e960052.jar"
+                      "s3Key": "53d5f384626b52ab3dabdb7877449d705e28170218b5d69dc99ea7a6981c1e15.jar"
                     },
                     "handler": "io.micronaut.chatbots.telegram.lambda.Handler",
                     "memorySize": 256,
@@ -707,7 +707,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "e19b5fce389c7723da7d5ca6c043ecef9de2e30a7f640d37b9af4f112bd1924a.jar"
+                      "s3Key": "bf47d8c196f993f5832f5e5e482d0d33827bc5e3fc101c386773f6c65804c888.jar"
                     },
                     "handler": "com.nb.SchedulerHandler",
                     "memorySize": 256,
@@ -829,6 +829,339 @@
             },
             "constructInfo": {
               "fqn": "aws-cdk-lib.aws_events.Rule",
+              "version": "2.166.0"
+            }
+          },
+          "rrtb-output-tbot": {
+            "id": "rrtb-output-tbot",
+            "path": "RrtbAppStack/rrtb-output-tbot",
+            "children": {
+              "ServiceRole": {
+                "id": "ServiceRole",
+                "path": "RrtbAppStack/rrtb-output-tbot/ServiceRole",
+                "children": {
+                  "ImportServiceRole": {
+                    "id": "ImportServiceRole",
+                    "path": "RrtbAppStack/rrtb-output-tbot/ServiceRole/ImportServiceRole",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.Resource",
+                      "version": "2.166.0"
+                    }
+                  },
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "RrtbAppStack/rrtb-output-tbot/ServiceRole/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                      "aws:cdk:cloudformation:props": {
+                        "assumeRolePolicyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "sts:AssumeRole",
+                              "Effect": "Allow",
+                              "Principal": {
+                                "Service": "lambda.amazonaws.com"
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        },
+                        "managedPolicyArns": [
+                          {
+                            "Fn::Join": [
+                              "",
+                              [
+                                "arn:",
+                                {
+                                  "Ref": "AWS::Partition"
+                                },
+                                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                      "version": "2.166.0"
+                    }
+                  },
+                  "DefaultPolicy": {
+                    "id": "DefaultPolicy",
+                    "path": "RrtbAppStack/rrtb-output-tbot/ServiceRole/DefaultPolicy",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "RrtbAppStack/rrtb-output-tbot/ServiceRole/DefaultPolicy/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::IAM::Policy",
+                          "aws:cdk:cloudformation:props": {
+                            "policyDocument": {
+                              "Statement": [
+                                {
+                                  "Action": [
+                                    "xray:PutTraceSegments",
+                                    "xray:PutTelemetryRecords"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                },
+                                {
+                                  "Action": [
+                                    "sqs:ReceiveMessage",
+                                    "sqs:DeleteMessage",
+                                    "sqs:GetQueueAttributes"
+                                  ],
+                                  "Effect": "Allow",
+                                  "Resource": {
+                                    "Fn::GetAtt": [
+                                      "rrtboutputfifo",
+                                      "Arn"
+                                    ]
+                                  }
+                                }
+                              ],
+                              "Version": "2012-10-17"
+                            },
+                            "policyName": "rrtboutputtbotServiceRoleDefaultPolicy35F1A76C",
+                            "roles": [
+                              {
+                                "Ref": "rrtboutputtbotServiceRole6332C612"
+                              }
+                            ]
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_iam.CfnPolicy",
+                          "version": "2.166.0"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_iam.Policy",
+                      "version": "2.166.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.Role",
+                  "version": "2.166.0"
+                }
+              },
+              "Code": {
+                "id": "Code",
+                "path": "RrtbAppStack/rrtb-output-tbot/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "RrtbAppStack/rrtb-output-tbot/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.166.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "RrtbAppStack/rrtb-output-tbot/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.166.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.166.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "RrtbAppStack/rrtb-output-tbot/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "architectures": [
+                      "arm64"
+                    ],
+                    "code": {
+                      "s3Bucket": {
+                        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+                      },
+                      "s3Key": "e6f6ff33a46b1b06a221feb23cdabb0889d94c123a9c8ceab4cc187801042093.jar"
+                    },
+                    "handler": "com.nb.handler.FunctionRequestHandler",
+                    "memorySize": 256,
+                    "role": {
+                      "Fn::GetAtt": [
+                        "rrtboutputtbotServiceRole6332C612",
+                        "Arn"
+                      ]
+                    },
+                    "runtime": "java17",
+                    "timeout": 10,
+                    "tracingConfig": {
+                      "mode": "Active"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.166.0"
+                }
+              },
+              "LogRetention": {
+                "id": "LogRetention",
+                "path": "RrtbAppStack/rrtb-output-tbot/LogRetention",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "RrtbAppStack/rrtb-output-tbot/LogRetention/Resource",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.CfnResource",
+                      "version": "2.166.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_logs.LogRetention",
+                  "version": "2.166.0"
+                }
+              },
+              "LogGroup": {
+                "id": "LogGroup",
+                "path": "RrtbAppStack/rrtb-output-tbot/LogGroup",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.166.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda.Function",
+              "version": "2.166.0"
+            }
+          },
+          "RrtbOutputLambda": {
+            "id": "RrtbOutputLambda",
+            "path": "RrtbAppStack/RrtbOutputLambda",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.166.0"
+            }
+          },
+          "rrtb_input.fifo": {
+            "id": "rrtb_input.fifo",
+            "path": "RrtbAppStack/rrtb_input.fifo",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::SQS::Queue",
+              "aws:cdk:cloudformation:props": {
+                "fifoQueue": true,
+                "queueName": "rrtb_input.fifo"
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_sqs.CfnQueue",
+              "version": "2.166.0"
+            }
+          },
+          "RrtbInputQueue": {
+            "id": "RrtbInputQueue",
+            "path": "RrtbAppStack/RrtbInputQueue",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.166.0"
+            }
+          },
+          "dlq_rrtb_input.fifo": {
+            "id": "dlq_rrtb_input.fifo",
+            "path": "RrtbAppStack/dlq_rrtb_input.fifo",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::SQS::Queue",
+              "aws:cdk:cloudformation:props": {
+                "fifoQueue": true,
+                "queueName": "dlq_rrtb_input.fifo"
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_sqs.CfnQueue",
+              "version": "2.166.0"
+            }
+          },
+          "RrtbInputDlq": {
+            "id": "RrtbInputDlq",
+            "path": "RrtbAppStack/RrtbInputDlq",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.166.0"
+            }
+          },
+          "rrtb_output.fifo": {
+            "id": "rrtb_output.fifo",
+            "path": "RrtbAppStack/rrtb_output.fifo",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::SQS::Queue",
+              "aws:cdk:cloudformation:props": {
+                "fifoQueue": true,
+                "queueName": "rrtb_output.fifo"
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_sqs.CfnQueue",
+              "version": "2.166.0"
+            }
+          },
+          "RrtbOutputQueue": {
+            "id": "RrtbOutputQueue",
+            "path": "RrtbAppStack/RrtbOutputQueue",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.166.0"
+            }
+          },
+          "dlq_rrtb_output.fifo": {
+            "id": "dlq_rrtb_output.fifo",
+            "path": "RrtbAppStack/dlq_rrtb_output.fifo",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::SQS::Queue",
+              "aws:cdk:cloudformation:props": {
+                "fifoQueue": true,
+                "queueName": "dlq_rrtb_output.fifo"
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_sqs.CfnQueue",
+              "version": "2.166.0"
+            }
+          },
+          "RrtbOutputDlq": {
+            "id": "RrtbOutputDlq",
+            "path": "RrtbAppStack/RrtbOutputDlq",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.166.0"
+            }
+          },
+          "RrtbOutputQueueMapping": {
+            "id": "RrtbOutputQueueMapping",
+            "path": "RrtbAppStack/RrtbOutputQueueMapping",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::Lambda::EventSourceMapping",
+              "aws:cdk:cloudformation:props": {
+                "batchSize": 1,
+                "eventSourceArn": {
+                  "Fn::GetAtt": [
+                    "rrtboutputfifo",
+                    "Arn"
+                  ]
+                },
+                "functionName": {
+                  "Ref": "rrtboutputtbotE2A91ED7"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda.CfnEventSourceMapping",
               "version": "2.166.0"
             }
           },

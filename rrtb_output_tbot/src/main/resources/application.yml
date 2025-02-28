@@ -1,0 +1,20 @@
+micronaut:
+  application:
+    name: rrtb-output-tbot
+
+app:
+  queue:
+    output: rrtb-output-queue
+
+telegram:
+  bot-token: ${TELEGRAM_BOT_TOKEN}
+  bot-username: ${TELEGRAM_BOT_USERNAME}
+  chat-id: ${TELEGRAM_CHAT_ID}
+
+aws:
+  region: ${AWS_REGION:us-east-1}
+
+logger:
+  levels:
+    com.nb: INFO
+    io.micronaut: INFO 

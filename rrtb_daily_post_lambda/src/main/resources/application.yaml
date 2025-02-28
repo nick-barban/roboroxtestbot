@@ -24,3 +24,8 @@ app:
     output:
       name: ${OUTPUT_QUEUE}
       dlq: dlq_${app.queue.output.name}
+logger:
+  levels:
+    com.nb.service.messging:
+      MessageProducerSuccessHandler: ${MESSAGE_PRODUCER_SUCCESS_HANDLER_LOGGER_LEVEL:INFO}
+      MessageProducerErrorHandler: ${MESSAGE_PRODUCER_ERROR_HANDLER_LOGGER_LEVEL:INFO}
