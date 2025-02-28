@@ -8,7 +8,7 @@ app:
 
 telegram:
   bot-token: ${TELEGRAM_BOT_TOKEN}
-  bot-username: ${TELEGRAM_BOT_USERNAME}
+  bot-username: ${TELEGRAM_BOT_USERNAME:RoboRoxTestBot}
 
 aws:
   region: ${AWS_REGION:us-east-1}
