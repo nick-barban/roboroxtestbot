@@ -45,12 +45,12 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
             if (StringUtils.isEmpty(post)) {
                 LOG.warn("No post for name {}", name);
             } else {
-                final Long chatId;
+                final Chat chat;
                 try {
-                    chatId = getChatId(name);
-                    sendPost(name, chatId, post);
+                    chat = getChat(name);
+                    sendPost(chat, post);
                 } catch (Exception e) {
-                    LOG.error("Could not send post: %s as could not obtain chatId: {}".formatted(name), e);
+                    LOG.error("Could not send post: %s as could not obtain chat: {}".formatted(name), e);
                 }
             }
         });
@@ -58,26 +58,23 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
         return null;
     }
 
-    private void sendPost(@NonNull String name, @NonNull Long chatId, @NonNull String text) {
+    private void sendPost(Chat chat, @NonNull String text) {
         try {
             final Update update = new Update();
             final Message message = new Message();
-            final Chat chat = new Chat();
-            chat.setId(chatId);
             message.setChat(chat);
             message.setText(text);
             update.setMessage(message);
             final String msg = objectMapper.writeValueAsString(update);
-            producer.sendOutput(msg, String.valueOf(chatId), "[%s]%s".formatted(name, LocalDate.now()));
-            LOG.info("Send post: {} for chat: {} to output queue", name, chatId);
+            producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
+            LOG.info("Send post: {} to output queue", chat.getTitle());
         } catch (IOException e) {
-            LOG.error("Could not send post: %s for chat: %d".formatted(name, chatId), e);
+            LOG.error("Could not send post: %s".formatted(chat.getTitle()), e);
         }
     }
 
-    private Long getChatId(String postName) throws Exception {
+    private Chat getChat(String postName) throws Exception {
         final String chatName = postName.split("_")[0];
-        return chatRepository.getChatIdByName(chatName)
-                .orElseThrow(Exception::new);
+        return chatRepository.getChatByName(chatName).orElseThrow(Exception::new);
     }
 }

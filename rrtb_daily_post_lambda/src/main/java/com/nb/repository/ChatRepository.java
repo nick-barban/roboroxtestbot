@@ -1,7 +1,9 @@
 package com.nb.repository;
 
+import io.micronaut.chatbots.telegram.api.Chat;
+
 import java.util.Optional;
 
 public interface ChatRepository {
-    Optional<Long> getChatIdByName(String chatName);
+    Optional<Chat> getChatByName(String chatName);
 }
