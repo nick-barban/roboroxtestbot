@@ -35,12 +35,26 @@ jobs:
       - name: Build with Maven
         run: ./mvnw package
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            */target/*.jar
+            rrtb_infra/
+
   deploy:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: .
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -54,7 +68,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: "us-east-1"
 
-      - name: Install CDK
+      - name: Install CDK dependencies
+        run: |
+          cd rrtb_infra
+          npm install
+
+      - name: Install CDK globally
         run: npm install -g aws-cdk
 
       - name: Deploy with CDK

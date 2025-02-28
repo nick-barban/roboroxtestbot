@@ -1,6 +1,5 @@
 package com.nb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nb.service.MessageService;
 import io.micronaut.chatbots.core.SpaceParser;
 import io.micronaut.chatbots.core.TextResourceLoader;
@@ -14,18 +13,14 @@ import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
 import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 @Singleton
 class PostCommandHandler extends CommandHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostCommandHandler.class);
     private static final String COMMAND_POST = "/post";
     private final MessageService service;
-    private final ObjectMapper objectMapper;
 
     PostCommandHandler(
             TelegramSlashCommandParser slashCommandParser,
@@ -36,7 +31,6 @@ class PostCommandHandler extends CommandHandler {
         super(slashCommandParser, textResourceLoader, spaceParser);
         this.service = service;
         // TODO by nickbarban: 17/02/25 Should be initialized in a central config bean
-        objectMapper = new ObjectMapper();
     }
 
     @Override
