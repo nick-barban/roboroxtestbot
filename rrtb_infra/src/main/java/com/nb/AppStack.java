@@ -16,7 +16,6 @@ import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
 import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 import software.amazon.awscdk.services.lambda.Code;
@@ -30,12 +29,9 @@ import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.BucketEncryption;
-import software.amazon.awscdk.services.scheduler.CfnSchedule;
-import software.amazon.awscdk.services.scheduler.CfnScheduleGroup;
 import software.amazon.awscdk.services.sqs.CfnQueue;
 import software.constructs.Construct;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
@@ -122,7 +118,7 @@ public class AppStack extends Stack {
                         this,
                         RRTB_OUTPUT_TBOT)
                 .runtime(Runtime.JAVA_17)
-                .handler("com.nb.handler.FunctionRequestHandler")
+                .handler("com.nb.FunctionRequestHandler")
                 .environment(new HashMap<>())
                 .code(Code.fromAsset(functionPath(RRTB_OUTPUT_TBOT)))
                 .timeout(Duration.seconds(10))
