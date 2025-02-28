@@ -21,5 +21,6 @@ app:
 
 logger:
   levels:
+    com.nb.service.MessageServiceImpl: ${MESSAGE_SERVICE_LOGGER_LEVEL:INFO}
     com.nb.service.MessageProducerSuccessHandler: ${MESSAGE_PRODUCER_SUCCESS_HANDLER_LOGGER_LEVEL:INFO}
     com.nb.service.InputMessageConsumer: ${INPUT_MESSAGE_CONSUMER_LOGGER_LEVEL:INFO}
