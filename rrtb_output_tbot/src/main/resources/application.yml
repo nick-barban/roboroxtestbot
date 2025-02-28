@@ -15,5 +15,6 @@ aws:
 
 logger:
   levels:
-    com.nb: INFO
-    io.micronaut: INFO 
+    com.nb:
+      service.TelegramService: ${TELEGRAM_SERVICE_LOGGER_LEVEL:DEBUG}
+    io.micronaut: INFO
