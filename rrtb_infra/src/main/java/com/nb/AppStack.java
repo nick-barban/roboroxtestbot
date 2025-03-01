@@ -9,14 +9,13 @@ import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.services.events.CronOptions;
 import software.amazon.awscdk.services.events.Rule;
 import software.amazon.awscdk.services.events.Schedule;
 import software.amazon.awscdk.services.events.targets.LambdaFunction;
 import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
-import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.iam.Role;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
@@ -32,13 +31,8 @@ import software.amazon.awscdk.services.s3.BlockPublicAccess;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.BucketEncryption;
 import software.amazon.awscdk.services.sqs.CfnQueue;
-import software.amazon.awscdk.services.scheduler.CfnSchedule;
-import software.amazon.awscdk.services.scheduler.CfnScheduleGroup;
-import software.amazon.awscdk.services.sqs.CfnQueue;
 import software.constructs.Construct;
 
-import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
@@ -115,8 +109,13 @@ public class AppStack extends Stack {
                 .value(rrtbDailyPostLambda.getFunctionArn())
                 .build();
         final Rule rule = Rule.Builder.create(this, "rrtb-daily-rule")
-                // TODO by nickbarban: 26/02/25 Should be replaced with cron from env
-                .schedule(Schedule.rate(Duration.minutes(1)))
+                .schedule(Schedule.cron(CronOptions.builder()
+                        .minute("0")
+                        .hour("7")
+                        .day("*")
+                        .month("*")
+                        .year("*")
+                        .build()))
                 .build();
         rule.addTarget(LambdaFunction.Builder.create(rrtbDailyPostLambda).build());
         // Create output Lambda function
@@ -195,19 +194,19 @@ public class AppStack extends Stack {
                 .eventSourceArn(outputQueue.getAttrArn())
                 .batchSize(1)
                 .build();
+        CfnOutput.Builder.create(this, "RrtbOutputQueueEventMapping")
+                .exportName("RrtbOutputQueueEventMapping")
+                .value(eventSourceMapping.getAttrEventSourceMappingArn())
+                .build();
     }
 
     public static String functionPath(String functionName) {
-        final String folder;
-        if (functionName.equals(RRTB_INPUT_LAMBDA)) {
-            folder = "../rrtb_input_tbot/target/";
-        } else if (functionName.equals(RRTB_DAILY_POST_LAMBDA)) {
-            folder = "../rrtb_daily_post_lambda/target/";
-        } else if (functionName.equals(RRTB_OUTPUT_TBOT)) {
-            folder = "../rrtb_output_tbot/target/";
-        } else {
-            throw new IllegalArgumentException("Unknown function name: " + functionName);
-        }
+        final String folder = switch (functionName) {
+            case RRTB_INPUT_LAMBDA -> "../rrtb_input_tbot/target/";
+            case RRTB_DAILY_POST_LAMBDA -> "../rrtb_daily_post_lambda/target/";
+            case RRTB_OUTPUT_TBOT -> "../rrtb_output_tbot/target/";
+            default -> throw new IllegalArgumentException("Unknown function name: " + functionName);
+        };
 
         return folder + functionFilename(functionName);
     }
@@ -217,14 +216,11 @@ public class AppStack extends Stack {
                 .graalVMNative(false)
                 // TODO by nickbarban: 17/02/25 Should be fetched from app's pom version
                 .version("0.1");
-        if (functionName.equals(RRTB_INPUT_LAMBDA)) {
-            builder.archiveBaseName("rrtb_input_tbot");
-        } else if (functionName.equals(RRTB_DAILY_POST_LAMBDA)) {
-            builder.archiveBaseName("rrtb_daily_post_lambda");
-        } else if (functionName.equals(RRTB_OUTPUT_TBOT)) {
-            builder.archiveBaseName("rrtb_output_tbot");
-        } else {
-            throw new IllegalArgumentException("Unknown function name: " + functionName);
+        switch (functionName) {
+            case RRTB_INPUT_LAMBDA -> builder.archiveBaseName("rrtb_input_tbot");
+            case RRTB_DAILY_POST_LAMBDA -> builder.archiveBaseName("rrtb_daily_post_lambda");
+            case RRTB_OUTPUT_TBOT -> builder.archiveBaseName("rrtb_output_tbot");
+            default -> throw new IllegalArgumentException("Unknown function name: " + functionName);
         }
 
         return builder
