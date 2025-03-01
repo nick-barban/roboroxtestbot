@@ -11,13 +11,13 @@ import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.events.Rule;
 import software.amazon.awscdk.services.events.Schedule;
+import software.amazon.awscdk.services.events.CronOptions;
 import software.amazon.awscdk.services.events.targets.LambdaFunction;
 import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.Role;
-import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 import software.amazon.awscdk.services.lambda.Code;
@@ -34,7 +34,6 @@ import software.amazon.awscdk.services.s3.BucketEncryption;
 import software.amazon.awscdk.services.sqs.CfnQueue;
 import software.amazon.awscdk.services.scheduler.CfnSchedule;
 import software.amazon.awscdk.services.scheduler.CfnScheduleGroup;
-import software.amazon.awscdk.services.sqs.CfnQueue;
 import software.constructs.Construct;
 
 import java.util.Arrays;
@@ -115,8 +114,14 @@ public class AppStack extends Stack {
                 .value(rrtbDailyPostLambda.getFunctionArn())
                 .build();
         final Rule rule = Rule.Builder.create(this, "rrtb-daily-rule")
-                // TODO by nickbarban: 26/02/25 Should be replaced with cron from env
-                .schedule(Schedule.rate(Duration.minutes(1)))
+                // Runs at 09:00 Kyiv time (07:00 UTC) every day
+                .schedule(Schedule.cron(CronOptions.builder()
+                        .minute("0")
+                        .hour("7")
+                        .day("*")
+                        .month("*")
+                        .year("*")
+                        .build()))
                 .build();
         rule.addTarget(LambdaFunction.Builder.create(rrtbDailyPostLambda).build());
         // Create output Lambda function
