@@ -1,0 +1,36 @@
+@startuml School Structure
+
+class School {
+    - String name
+    - String location
+    - List<Group> groups
+    - String telegramGroup
+    - String description
+}
+
+class Group {
+    - String name
+    - String scheduledDay
+    - String scheduledTime
+    - List<User> pupils
+    - User teacher
+    - String description
+}
+
+class User {
+    - String firstName
+    - String lastName
+    - User parent
+    - String phone
+    - String email
+    - String telegram
+    - String viber
+    - String position
+}
+
+School "1" *-- "*" Group : contains >
+Group "1" *-- "1" User : has teacher >
+Group "1" *-- "*" User : has pupils >
+User "1" -- "0..1" User : has parent >
+
+@enduml 
