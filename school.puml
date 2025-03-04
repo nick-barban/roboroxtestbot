@@ -1,23 +1,75 @@
 @startuml School Structure
 
+' Style settings
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+' Class definitions with documentation
 class School {
+    ' Documentation
+    .. School represents an educational institution ..
+    
+    ' Attributes
     - String name
     - String location
     - List<Group> groups
     - String telegramGroup
     - String description
+    
+    ' Methods
+    + getName(): String
+    + setName(name: String): void
+    + getLocation(): String
+    + setLocation(location: String): void
+    + getGroups(): List<Group>
+    + addGroup(group: Group): void
+    + removeGroup(group: Group): void
+    + getTelegramGroup(): String
+    + setTelegramGroup(telegramGroup: String): void
+    + getDescription(): String
+    + setDescription(description: String): void
 }
 
 class Group {
+    ' Documentation
+    .. Group represents a class or study group in a school ..
+    
+    ' Attributes
+    - School school
     - String name
     - String scheduledDay
     - String scheduledTime
     - List<User> pupils
     - User teacher
     - String description
+    
+    ' Methods
+    + getName(): String
+    + setName(name: String): void
+    + getSchool(): School
+    + setSchool(school: School): void
+    + getScheduledDay(): String
+    + setScheduledDay(day: String): void
+    + getScheduledTime(): String
+    + setScheduledTime(time: String): void
+    + getPupils(): List<User>
+    + addPupil(pupil: User): void
+    + removePupil(pupil: User): void
+    + getTeacher(): User
+    + setTeacher(teacher: User): void
+    + getDescription(): String
+    + setDescription(description: String): void
 }
 
 class User {
+    ' Documentation
+    .. User represents a person in the system (teacher, pupil, parent) ..
+    
+    ' Attributes
     - String firstName
     - String lastName
     - User parent
@@ -26,11 +78,41 @@ class User {
     - String telegram
     - String viber
     - String position
+    
+    ' Methods
+    + getFirstName(): String
+    + setFirstName(name: String): void
+    + getLastName(): String
+    + setLastName(name: String): void
+    + getParent(): User
+    + setParent(parent: User): void
+    + getPhone(): String
+    + setPhone(phone: String): void
+    + getEmail(): String
+    + setEmail(email: String): void
+    + getTelegram(): String
+    + setTelegram(telegram: String): void
+    + getViber(): String
+    + setViber(viber: String): void
+    + getPosition(): String
+    + setPosition(position: String): void
 }
 
+' Relationships with documentation
 School "1" *-- "*" Group : contains >
+note right: A school can have multiple groups
+note left: Each group belongs to one school
+
 Group "1" *-- "1" User : has teacher >
+note right: Each group has one teacher
+note left: A teacher can teach multiple groups
+
 Group "1" *-- "*" User : has pupils >
+note right: A group can have multiple pupils
+note left: A pupil can be in multiple groups
+
 User "1" -- "0..1" User : has parent >
+note right: A user can have one parent
+note left: A user can be a parent to multiple users
 
 @enduml 
