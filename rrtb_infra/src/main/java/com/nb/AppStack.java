@@ -9,7 +9,12 @@ import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
-import software.amazon.awscdk.services.dynamodb.*;
+import software.amazon.awscdk.services.dynamodb.Attribute;
+import software.amazon.awscdk.services.dynamodb.AttributeType;
+import software.amazon.awscdk.services.dynamodb.BillingMode;
+import software.amazon.awscdk.services.dynamodb.GlobalSecondaryIndexProps;
+import software.amazon.awscdk.services.dynamodb.ProjectionType;
+import software.amazon.awscdk.services.dynamodb.Table;
 import software.amazon.awscdk.services.events.CronOptions;
 import software.amazon.awscdk.services.events.Rule;
 import software.amazon.awscdk.services.events.Schedule;
@@ -36,6 +41,7 @@ import software.constructs.Construct;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class AppStack extends Stack {
@@ -264,7 +270,7 @@ public class AppStack extends Stack {
                         "sqs:ReceiveMessage",
                         "sqs:DeleteMessage",
                         "sqs:GetQueueAttributes"))
-                .resources(Arrays.asList(outputQueue.getAttrArn()))
+                .resources(List.of(outputQueue.getAttrArn()))
                 .build();
 
         rrtbOutputLambda.addToRolePolicy(sqsPolicy);

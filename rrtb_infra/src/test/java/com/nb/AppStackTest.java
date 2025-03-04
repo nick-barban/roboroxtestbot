@@ -1,5 +1,6 @@
 package com.nb;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.localstack.LocalStackContainer;
@@ -8,16 +9,15 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.assertions.Template;
-import software.amazon.awscdk.assertions.Match;
-import software.amazon.awscdk.services.dynamodb.AttributeType;
-import software.amazon.awscdk.services.lambda.Runtime;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.*;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.CLOUDWATCH;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.DYNAMODB;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.LAMBDA;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
+import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
 @Testcontainers
 class AppStackTest {
@@ -36,12 +36,12 @@ class AppStackTest {
 
     @Test
     void testDynamoDBTables() {
-        App app = new App();
-        AppStack stack = new AppStack(app, "TestStack");
-        Template template = Template.fromStack(stack);
+        final App app = new App();
+        final AppStack stack = new AppStack(app, "TestStack");
+        final Template template = Template.fromStack(stack);
 
         // Test School table
-        template.hasResourceProperties("AWS::DynamoDB::Table", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::DynamoDB::Table", Map.of(
                 "TableName", "School",
                 "KeySchema", List.of(Map.of(
                         "AttributeName", "id",
@@ -55,10 +55,10 @@ class AppStackTest {
                 "PointInTimeRecoverySpecification", Map.of(
                         "PointInTimeRecoveryEnabled", true
                 )
-        ));
+        ))).doesNotThrowAnyException();
 
         // Test Group table
-        template.hasResourceProperties("AWS::DynamoDB::Table", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::DynamoDB::Table", Map.of(
                 "TableName", "Group",
                 "KeySchema", List.of(
                         Map.of("AttributeName", "id", "KeyType", "HASH"),
@@ -73,10 +73,10 @@ class AppStackTest {
                 "PointInTimeRecoverySpecification", Map.of(
                         "PointInTimeRecoveryEnabled", true
                 )
-        ));
+        ))).doesNotThrowAnyException();
 
         // Test User table
-        template.hasResourceProperties("AWS::DynamoDB::Table", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::DynamoDB::Table", Map.of(
                 "TableName", "User",
                 "KeySchema", List.of(
                         Map.of("AttributeName", "id", "KeyType", "HASH"),
@@ -91,17 +91,17 @@ class AppStackTest {
                 "PointInTimeRecoverySpecification", Map.of(
                         "PointInTimeRecoveryEnabled", true
                 )
-        ));
+        ))).doesNotThrowAnyException();
     }
 
     @Test
     void testLambdaFunctions() {
-        App app = new App();
-        AppStack stack = new AppStack(app, "TestStack");
-        Template template = Template.fromStack(stack);
+        final App app = new App();
+        final AppStack stack = new AppStack(app, "TestStack");
+        final Template template = Template.fromStack(stack);
 
         // Test Input Lambda
-        template.hasResourceProperties("AWS::Lambda::Function", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::Lambda::Function", Map.of(
                 "Handler", "io.micronaut.chatbots.telegram.lambda.Handler",
                 "Runtime", "java17",
                 "Timeout", 10,
@@ -110,10 +110,10 @@ class AppStackTest {
                 "TracingConfig", Map.of(
                         "Mode", "Active"
                 )
-        ));
+        ))).doesNotThrowAnyException();
 
         // Test Daily Post Lambda
-        template.hasResourceProperties("AWS::Lambda::Function", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::Lambda::Function", Map.of(
                 "Handler", "com.nb.SchedulerHandler",
                 "Runtime", "java17",
                 "Timeout", 20,
@@ -122,10 +122,10 @@ class AppStackTest {
                 "TracingConfig", Map.of(
                         "Mode", "Active"
                 )
-        ));
+        ))).doesNotThrowAnyException();
 
         // Test Output Lambda
-        template.hasResourceProperties("AWS::Lambda::Function", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::Lambda::Function", Map.of(
                 "Handler", "com.nb.FunctionRequestHandler",
                 "Runtime", "java17",
                 "Timeout", 10,
@@ -134,47 +134,47 @@ class AppStackTest {
                 "TracingConfig", Map.of(
                         "Mode", "Active"
                 )
-        ));
+        ))).doesNotThrowAnyException();
     }
 
     @Test
     void testSQSQueues() {
-        App app = new App();
-        AppStack stack = new AppStack(app, "TestStack");
-        Template template = Template.fromStack(stack);
+        final App app = new App();
+        final AppStack stack = new AppStack(app, "TestStack");
+        final Template template = Template.fromStack(stack);
 
         // Test Input Queue
-        template.hasResourceProperties("AWS::SQS::Queue", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::SQS::Queue", Map.of(
                 "QueueName", "rrtb_input.fifo",
                 "FifoQueue", true
-        ));
+        ))).doesNotThrowAnyException();
 
         // Test Input DLQ
-        template.hasResourceProperties("AWS::SQS::Queue", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::SQS::Queue", Map.of(
                 "QueueName", "dlq_rrtb_input.fifo",
                 "FifoQueue", true
-        ));
+        ))).doesNotThrowAnyException();
 
         // Test Output Queue
-        template.hasResourceProperties("AWS::SQS::Queue", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::SQS::Queue", Map.of(
                 "QueueName", "rrtb_output.fifo",
                 "FifoQueue", true
-        ));
+        ))).doesNotThrowAnyException();
 
         // Test Output DLQ
-        template.hasResourceProperties("AWS::SQS::Queue", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::SQS::Queue", Map.of(
                 "QueueName", "dlq_rrtb_output.fifo",
                 "FifoQueue", true
-        ));
+        ))).doesNotThrowAnyException();
     }
 
     @Test
     void testS3Bucket() {
-        App app = new App();
-        AppStack stack = new AppStack(app, "TestStack");
-        Template template = Template.fromStack(stack);
+        final App app = new App();
+        final AppStack stack = new AppStack(app, "TestStack");
+        final Template template = Template.fromStack(stack);
 
-        template.hasResourceProperties("AWS::S3::Bucket", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::S3::Bucket", Map.of(
                 "PublicAccessBlockConfiguration", Map.of(
                         "BlockPublicAcls", true,
                         "BlockPublicPolicy", true,
@@ -184,18 +184,18 @@ class AppStackTest {
                 "VersioningConfiguration", Map.of(
                         "Status", "Enabled"
                 )
-        ));
+        ))).doesNotThrowAnyException();
     }
 
     @Test
     void testCloudWatchEvents() {
-        App app = new App();
-        AppStack stack = new AppStack(app, "TestStack");
-        Template template = Template.fromStack(stack);
+        final App app = new App();
+        final AppStack stack = new AppStack(app, "TestStack");
+        final Template template = Template.fromStack(stack);
 
-        template.hasResourceProperties("AWS::Events::Rule", Map.of(
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::Events::Rule", Map.of(
                 "ScheduleExpression", "cron(0 7 * * ? *)",
                 "State", "ENABLED"
-        ));
+        ))).doesNotThrowAnyException();
     }
 }
