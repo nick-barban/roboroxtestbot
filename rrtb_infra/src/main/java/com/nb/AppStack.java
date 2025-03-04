@@ -9,6 +9,7 @@ import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.services.dynamodb.*;
 import software.amazon.awscdk.services.events.CronOptions;
 import software.amazon.awscdk.services.events.Rule;
 import software.amazon.awscdk.services.events.Schedule;
@@ -49,6 +50,86 @@ public class AppStack extends Stack {
 
     public AppStack(final Construct parent, final String id, final StackProps props) {
         super(parent, id, props);
+
+        // Create School table
+        Table schoolTable = Table.Builder.create(this, "SchoolTable")
+                .tableName("School")
+                .partitionKey(Attribute.builder()
+                        .name("id")
+                        .type(AttributeType.STRING)
+                        .build())
+                .billingMode(BillingMode.PAY_PER_REQUEST)
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .pointInTimeRecovery(true)
+                .build();
+
+        // Create Group table
+        Table groupTable = Table.Builder.create(this, "GroupTable")
+                .tableName("Group")
+                .partitionKey(Attribute.builder()
+                        .name("id")
+                        .type(AttributeType.STRING)
+                        .build())
+                .sortKey(Attribute.builder()
+                        .name("schoolId")
+                        .type(AttributeType.STRING)
+                        .build())
+                .billingMode(BillingMode.PAY_PER_REQUEST)
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .pointInTimeRecovery(true)
+                .build();
+
+        // Create User table
+        Table userTable = Table.Builder.create(this, "UserTable")
+                .tableName("User")
+                .partitionKey(Attribute.builder()
+                        .name("id")
+                        .type(AttributeType.STRING)
+                        .build())
+                .sortKey(Attribute.builder()
+                        .name("type")
+                        .type(AttributeType.STRING)
+                        .build())
+                .billingMode(BillingMode.PAY_PER_REQUEST)
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .pointInTimeRecovery(true)
+                .build();
+
+        // Create GSIs for Group table
+        groupTable.addGlobalSecondaryIndex(GlobalSecondaryIndexProps.builder()
+                .indexName("TeacherIndex")
+                .partitionKey(Attribute.builder()
+                        .name("teacherId")
+                        .type(AttributeType.STRING)
+                        .build())
+                .projectionType(ProjectionType.ALL)
+                .build());
+
+        // Create GSIs for User table
+        userTable.addGlobalSecondaryIndex(GlobalSecondaryIndexProps.builder()
+                .indexName("ParentIndex")
+                .partitionKey(Attribute.builder()
+                        .name("parentId")
+                        .type(AttributeType.STRING)
+                        .build())
+                .projectionType(ProjectionType.ALL)
+                .build());
+
+        // Output table names
+        CfnOutput.Builder.create(this, "SchoolTableName")
+                .exportName("SchoolTableName")
+                .value(schoolTable.getTableName())
+                .build();
+
+        CfnOutput.Builder.create(this, "GroupTableName")
+                .exportName("GroupTableName")
+                .value(groupTable.getTableName())
+                .build();
+
+        CfnOutput.Builder.create(this, "UserTableName")
+                .exportName("UserTableName")
+                .value(userTable.getTableName())
+                .build();
 
         final Bucket bucket = Bucket.Builder.create(this, "rrtb-posts")
                 .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
