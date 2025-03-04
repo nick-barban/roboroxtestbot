@@ -10,10 +10,17 @@ skinparam class {
 
 ' Class definitions with documentation
 class School {
+    ' Documentation
+    .. School represents an educational institution ..
+    
+    ' Attributes
     - String name
     - String location
+    - List<Group> groups
     - String telegramGroup
     - String description
+    
+    ' Methods
     + getName(): String
     + setName(name: String): void
     + getLocation(): String
@@ -28,6 +35,10 @@ class School {
 }
 
 class Group {
+    ' Documentation
+    .. Group represents a class or study group in a school ..
+    
+    ' Attributes
     - School school
     - String name
     - String scheduledDay
@@ -35,8 +46,12 @@ class Group {
     - List<User> pupils
     - User teacher
     - String description
+    
+    ' Methods
     + getName(): String
     + setName(name: String): void
+    + getSchool(): School
+    + setSchool(school: School): void
     + getScheduledDay(): String
     + setScheduledDay(day: String): void
     + getScheduledTime(): String
@@ -51,6 +66,10 @@ class Group {
 }
 
 class User {
+    ' Documentation
+    .. User represents a person in the system (teacher, pupil, parent) ..
+    
+    ' Attributes
     - String firstName
     - String lastName
     - User parent
@@ -59,6 +78,8 @@ class User {
     - String telegram
     - String viber
     - String position
+    
+    ' Methods
     + getFirstName(): String
     + setFirstName(name: String): void
     + getLastName(): String
