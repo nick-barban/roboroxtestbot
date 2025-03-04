@@ -12,7 +12,6 @@ skinparam class {
 class School {
     - String name
     - String location
-    - List<Group> groups
     - String telegramGroup
     - String description
     + getName(): String
@@ -29,6 +28,7 @@ class School {
 }
 
 class Group {
+    - School school
     - String name
     - String scheduledDay
     - String scheduledTime
