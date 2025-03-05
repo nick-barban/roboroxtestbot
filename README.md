@@ -106,4 +106,22 @@ cd ..
 
 - [Micronaut Telegram ChatBot as AWS Lambda function documentation](https://micronaut-projects.github.io/micronaut-chatbots/latest/guide/)
 
+---
+# Prepare AWS environment
 
+## Create github-actions-role
+```bash
+- echo '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Federated":"arn:aws:iam::'"$(aws sts get-caller-identity --query Account --output text)"':oidc-provider/token.actions.githubusercontent.com"},"Action":"sts:AssumeRoleWithWebIdentity","Condition":{"StringLike":{"token.actions.githubusercontent.com:sub":"repo:nick-barban/roboroxtestbot:*"}}}]}' > trust-policy.json
+```
+```bash
+- echo '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["cloudformation:*","s3:*","iam:*","lambda:*","dynamodb:*","sqs:*","events:*","ssm:*"],"Resource":"*"}]}' > permissions-policy.json
+```
+```bash
+- aws iam create-role --role-name github-actions-role --assume-role-policy-document file://trust-policy.json
+```
+```bash
+- aws iam put-role-policy --role-name github-actions-role --policy-name github-actions-policy --policy-document file://permissions-policy.json
+```
+```bash
+- aws iam get-role --role-name github-actions-role --query 'Role.Arn' --output text
+```
