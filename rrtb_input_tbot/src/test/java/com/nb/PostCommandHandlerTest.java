@@ -32,7 +32,7 @@ class PostCommandHandlerTest extends AbstractTest {
 
     private String expectedPostCommandResponse() {
         return """
-                Send daily post text for this channel
+                Please send the post file that you want to publish. The file should be previously uploaded to S3.
                 """;
     }
 }

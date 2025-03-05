@@ -7,9 +7,12 @@ import io.micronaut.test.support.TestPropertyProvider;
 import jakarta.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.Message;
 import software.amazon.awssdk.services.sqs.model.PurgeQueueRequest;
@@ -24,15 +27,67 @@ import java.util.Map;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractTest implements TestPropertyProvider {
     protected static final DockerImageName LOCALSTACK_IMAGE = DockerImageName.parse("localstack/localstack:latest");
-    protected static final LocalStackContainer LOCALSTACK = new LocalStackContainer(LOCALSTACK_IMAGE).withServices(LocalStackContainer.Service.SQS);
+    protected static final LocalStackContainer LOCALSTACK = new LocalStackContainer(LOCALSTACK_IMAGE)
+            .withServices(LocalStackContainer.Service.SQS, LocalStackContainer.Service.DYNAMODB);
     public static final String GIVEN_TEST_INPUT_FIFO_QUEUE_NAME = "test_input.fifo";
     public static final String GIVEN_TEST_OUTPUT_FIFO_QUEUE_NAME = "test_output.fifo";
+    public static final String USER_STATE_TABLE_NAME = "UserStateTable";
+    public static final String GROUP_TABLE_NAME = "GroupTable";
 
     @Inject
     protected JsonMapper jsonMapper;
 
     @Inject
     protected SqsClient sqsClient;
+
+    @Inject
+    protected DynamoDbClient dynamoDbClient;
+
+    @BeforeAll
+    public void setupDynamoDB() {
+        if (!LOCALSTACK.isRunning()) {
+            LOCALSTACK.start();
+        }
+
+        // Create UserStateTable
+        CreateTableRequest userStateTableRequest = CreateTableRequest.builder()
+                .tableName(USER_STATE_TABLE_NAME)
+                .keySchema(
+                    KeySchemaElement.builder().attributeName("userId").keyType(KeyType.HASH).build(),
+                    KeySchemaElement.builder().attributeName("commandType").keyType(KeyType.RANGE).build()
+                )
+                .attributeDefinitions(
+                    AttributeDefinition.builder().attributeName("userId").attributeType(ScalarAttributeType.S).build(),
+                    AttributeDefinition.builder().attributeName("commandType").attributeType(ScalarAttributeType.S).build()
+                )
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                    .readCapacityUnits(5L)
+                    .writeCapacityUnits(5L)
+                    .build())
+                .build();
+
+        // Create GroupTable
+        CreateTableRequest groupTableRequest = CreateTableRequest.builder()
+                .tableName(GROUP_TABLE_NAME)
+                .keySchema(
+                    KeySchemaElement.builder().attributeName("id").keyType(KeyType.HASH).build()
+                )
+                .attributeDefinitions(
+                    AttributeDefinition.builder().attributeName("id").attributeType(ScalarAttributeType.S).build()
+                )
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                    .readCapacityUnits(5L)
+                    .writeCapacityUnits(5L)
+                    .build())
+                .build();
+
+        try {
+            dynamoDbClient.createTable(userStateTableRequest);
+            dynamoDbClient.createTable(groupTableRequest);
+        } catch (ResourceInUseException e) {
+            // Tables already exist, ignore
+        }
+    }
 
     @Override
     public @NonNull Map<String, String> getProperties() {
@@ -45,7 +100,8 @@ public abstract class AbstractTest implements TestPropertyProvider {
                 "aws.access-key-id", LOCALSTACK.getAccessKey(),
                 "aws.secret-key", LOCALSTACK.getSecretKey(),
                 "aws.region", LOCALSTACK.getRegion(),
-                "aws.services.sqs.endpoint-override", LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.SQS).toString()
+                "aws.services.sqs.endpoint-override", LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.SQS).toString(),
+                "aws.services.dynamodb.endpoint-override", LOCALSTACK.getEndpointOverride(LocalStackContainer.Service.DYNAMODB).toString()
         );
     }
 
