@@ -76,7 +76,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: CDK Bootstrap
-        run: cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1
+        run: cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1 --no-bootstrap-customer-key --cloudformation-execution-policies arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/AWSCloudFormationFullAccess
 
       - name: Deploy CDK app
         run: cdk deploy --all --require-approval never
