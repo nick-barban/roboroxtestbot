@@ -122,3 +122,22 @@ cd ..
     aws iam create-access-key --user-name github-actions
     ```
 
+- attach the AWSCloudFormationFullAccess policy
+    ```bash
+  aws iam attach-user-policy --user-name github-actions --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+  ```
+
+- attach the AWSCloudFormationReadOnlyAccess policy for additional CloudFormation permissions
+    ```bash
+  aws iam attach-user-policy --user-name github-actions --policy-arn arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+    ```
+
+- attach the IAMFullAccess policy since CDK needs to create IAM roles and policies
+    ```bash
+  aws iam attach-user-policy --user-name github-actions --policy-arn arn:aws:iam::aws:policy/IAMFullAccess
+    ``` 
+
+- verify the attached policies
+    ```bash
+  aws iam list-attached-user-policies --user-name github-actions
+    ```
