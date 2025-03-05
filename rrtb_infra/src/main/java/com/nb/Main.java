@@ -9,7 +9,7 @@ public class Main {
         App app = new App();
 
         // Create the main application stack
-        new AppStack(app, "RRTBStack", StackProps.builder()
+        new AppStack(app, "RrtbAppStack", StackProps.builder()
                 .env(Environment.builder()
                         .account(System.getenv("CDK_DEFAULT_ACCOUNT"))
                         .region(System.getenv("CDK_DEFAULT_REGION"))
