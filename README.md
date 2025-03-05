@@ -106,4 +106,19 @@ cd ..
 
 - [Micronaut Telegram ChatBot as AWS Lambda function documentation](https://micronaut-projects.github.io/micronaut-chatbots/latest/guide/)
 
+--- 
+
+#Prepare AWS
+
+## Prepare AWS github actions
+
+- creare user
+    ```bash
+    aws iam create-user --user-name github-actions
+    ```
+
+- create access keys for this user
+    ```bash
+    aws iam create-access-key --user-name github-actions
+    ```
 
