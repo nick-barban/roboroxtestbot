@@ -81,6 +81,11 @@ jobs:
           cd rrtb_infra
           mvn package
 
+      - name: CDK Bootstrap
+        run: |
+          cd rrtb_infra
+          cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1
+
       - name: Deploy with CDK
         run: |
           cd rrtb_infra
