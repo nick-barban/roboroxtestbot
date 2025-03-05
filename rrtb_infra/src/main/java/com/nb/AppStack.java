@@ -285,6 +285,21 @@ public class AppStack extends Stack {
                 .exportName("RrtbOutputQueueEventMapping")
                 .value(eventSourceMapping.getAttrEventSourceMappingArn())
                 .build();
+
+        // New table for tracking user states during post creation
+        Table userStateTable = Table.Builder.create(this, "UserStateTable")
+                .partitionKey(Attribute.builder()
+                        .name("userId")
+                        .type(AttributeType.STRING)
+                        .build())
+                .sortKey(Attribute.builder()
+                        .name("commandType")
+                        .type(AttributeType.STRING)
+                        .build())
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .billingMode(BillingMode.PAY_PER_REQUEST)
+                .timeToLiveAttribute("ttl")
+                .build();
     }
 
     public static String functionPath(String functionName) {
