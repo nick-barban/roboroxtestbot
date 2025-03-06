@@ -1,5 +1,6 @@
 package com.nb;
 
+import com.nb.domain.RrtbCommand;
 import com.nb.service.MessageService;
 import com.nb.service.PostService;
 import com.nb.service.UserStateService;
@@ -23,7 +24,6 @@ import java.util.Optional;
 @Singleton
 class PostCommandHandler extends CommandHandler {
 
-    private static final String COMMAND_POST = "/post";
     private final MessageService messageService;
     private final UserStateService userStateService;
     private final PostService postService;
@@ -47,7 +47,7 @@ class PostCommandHandler extends CommandHandler {
     @Override
     @NonNull
     public String getCommand() {
-        return COMMAND_POST;
+        return RrtbCommand.POST.command();
     }
 
     @Override
@@ -61,11 +61,6 @@ class PostCommandHandler extends CommandHandler {
         if (currentState.isEmpty()) {
             // Start new post creation flow
             userStateService.setPostState(userId);
-            /*return SendMessageUtils.compose(
-                    spaceParser,
-                    input,
-                    "Please send the post file that you want to publish. The file should be previously uploaded to S3."
-            );*/
             return super.handle(bot, input);
         }
         

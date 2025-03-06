@@ -1,6 +1,6 @@
 package com.nb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nb.domain.RrtbCommand;
 import com.nb.service.messaging.MessageProducer;
 import io.micronaut.chatbots.core.SpaceParser;
 import io.micronaut.chatbots.core.TextResourceLoader;
@@ -12,6 +12,7 @@ import io.micronaut.chatbots.telegram.core.TelegramBotConfiguration;
 import io.micronaut.chatbots.telegram.core.TelegramSlashCommandParser;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.annotation.Nullable;
+import io.micronaut.json.JsonMapper;
 import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -23,26 +24,24 @@ import java.util.Optional;
 class StartCommandHandler extends CommandHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(StartCommandHandler.class);
-    private static final String COMMAND_START = "/start";
     private final MessageProducer producer;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     StartCommandHandler(
             TelegramSlashCommandParser slashCommandParser,
             TextResourceLoader textResourceLoader,
             SpaceParser<Update, Chat> spaceParser,
-            MessageProducer producer
+            MessageProducer producer, JsonMapper objectMapper
     ) {
         super(slashCommandParser, textResourceLoader, spaceParser);
         this.producer = producer;
-        // TODO by nickbarban: 17/02/25 Should be initialized in a central config bean
-        objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     @Override
     @NonNull
     public String getCommand() {
-        return COMMAND_START;
+        return RrtbCommand.START.command();
     }
 
     @Override
