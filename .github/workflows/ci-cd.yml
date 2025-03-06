@@ -82,7 +82,7 @@ jobs:
             --no-bootstrap-customer-key \
             --cloudformation-execution-policies arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/AWSCloudFormationFullAccess \
             --no-execute \
-            --toolkit-stack-name CDKToolkit
+            --toolkit-stack-name CDKToolkit \
             --trust ${{ secrets.AWS_ACCOUNT_ID }}
 
       - name: Deploy CDK app
