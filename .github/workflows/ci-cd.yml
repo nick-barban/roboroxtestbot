@@ -51,6 +51,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      ssm: read
     steps:
       - uses: actions/checkout@v4
 
