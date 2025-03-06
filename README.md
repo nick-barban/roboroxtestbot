@@ -141,3 +141,18 @@ cd ..
     ```bash
   aws iam list-attached-user-policies --user-name github-actions
     ```
+
+- create policy for github-actions user to access SSM parameters for CDK bootstrap
+    ```bash
+  aws iam create-policy \
+    --policy-name github-actions-ssm-policy \
+    --policy-document file://ssm-policy.json \
+    --description "Policy for GitHub Actions to access SSM parameters for CDK bootstrap"
+    ```
+  
+- attach ssm-policy to the github-actions user
+    ```bash
+  aws iam attach-user-policy \
+    --user-name github-actions \
+    --policy-arn arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):policy/github-actions-ssm-policy
+    ```
