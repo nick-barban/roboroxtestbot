@@ -85,11 +85,11 @@ jobs:
         run: |
           cd rrtb_infra
           cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1 \
-            --no-bootstrap-customer-key \
             --cloudformation-execution-policies arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/AWSCloudFormationFullAccess \
             --toolkit-stack-name CDKToolkit \
             --trust ${{ secrets.AWS_ACCOUNT_ID }} \
             --force
+            --template ../bootstrap-template.yaml
 
       - name: Deploy CDK app
         run: |
