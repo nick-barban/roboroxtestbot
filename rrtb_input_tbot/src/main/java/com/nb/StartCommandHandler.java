@@ -1,7 +1,7 @@
 package com.nb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nb.service.MessageProducer;
+import com.nb.service.messaging.MessageProducer;
 import io.micronaut.chatbots.core.SpaceParser;
 import io.micronaut.chatbots.core.TextResourceLoader;
 import io.micronaut.chatbots.telegram.api.Chat;

@@ -55,16 +55,18 @@ class PostCommandHandler extends CommandHandler {
         messageService.sendInputMessage(input);
         
         // Check if user is already in a post state
-        Optional<String> currentState = userStateService.getPostState(input);
+        final String userId = String.valueOf(input.getMessage().getFrom().getId());
+        final Optional<String> currentState = userStateService.getPostState(userId);
         
         if (currentState.isEmpty()) {
             // Start new post creation flow
-            userStateService.setPostState(input);
-            return SendMessageUtils.compose(
+            userStateService.setPostState(userId);
+            /*return SendMessageUtils.compose(
                     spaceParser,
                     input,
                     "Please send the post file that you want to publish. The file should be previously uploaded to S3."
-            );
+            );*/
+            return super.handle(bot, input);
         }
         
         // Handle existing state
@@ -85,8 +87,9 @@ class PostCommandHandler extends CommandHandler {
                         
             case "WAITING_FOR_CHAT_ID":
                 // Handle chat ID input
-                String chatId = input.getMessage().getText();
-                Map<String, String> stateData = userStateService.getPostStateData(input);
+                final String chatId = input.getMessage().getText();
+                final String userId = String.valueOf(input.getMessage().getFrom().getId());
+                Map<String, String> stateData = userStateService.getPostStateData(userId);
                 String postFileName = stateData.get("fileName");
                 postService.savePostData(input, postFileName, chatId);
                 userStateService.updatePostState(input, "COMPLETED", Map.of("chatId", chatId));
