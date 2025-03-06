@@ -92,6 +92,27 @@ class AppStackTest {
                         "PointInTimeRecoveryEnabled", true
                 )
         ))).doesNotThrowAnyException();
+
+        // Test UserState table
+        Assertions.assertThatCode(() -> template.hasResourceProperties("AWS::DynamoDB::Table", Map.of(
+                "TableName", "UserState",
+                "KeySchema", List.of(
+                        Map.of("AttributeName", "userId", "KeyType", "HASH"),
+                        Map.of("AttributeName", "commandType", "KeyType", "RANGE")
+                ),
+                "AttributeDefinitions", List.of(
+                        Map.of("AttributeName", "userId", "AttributeType", "S"),
+                        Map.of("AttributeName", "commandType", "AttributeType", "S")
+                ),
+                "BillingMode", "PAY_PER_REQUEST",
+                "PointInTimeRecoverySpecification", Map.of(
+                        "PointInTimeRecoveryEnabled", true
+                ),
+                "TimeToLiveSpecification", Map.of(
+                        "AttributeName", "ttl",
+                        "Enabled", true
+                )
+        ))).doesNotThrowAnyException();
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.nb.service;
 
 import com.nb.AbstractTest;
+import com.nb.service.messaging.MessageProducer;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.sqs.model.Message;

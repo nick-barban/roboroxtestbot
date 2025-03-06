@@ -1,1 +1,1 @@
-Send daily post text for this channel
+Please send the post file name that you want to publish. The file should be previously uploaded to S3.

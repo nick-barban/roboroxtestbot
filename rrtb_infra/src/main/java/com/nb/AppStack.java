@@ -58,7 +58,7 @@ public class AppStack extends Stack {
         super(parent, id, props);
 
         // Create School table
-        Table schoolTable = Table.Builder.create(this, "SchoolTable")
+        final Table schoolTable = Table.Builder.create(this, "SchoolTable")
                 .tableName("School")
                 .partitionKey(Attribute.builder()
                         .name("id")
@@ -68,9 +68,13 @@ public class AppStack extends Stack {
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .pointInTimeRecovery(true)
                 .build();
+        CfnOutput.Builder.create(this, "SchoolTableName")
+                .exportName("SchoolTableName")
+                .value(schoolTable.getTableName())
+                .build();
 
         // Create Group table
-        Table groupTable = Table.Builder.create(this, "GroupTable")
+        final Table groupTable = Table.Builder.create(this, "GroupTable")
                 .tableName("Group")
                 .partitionKey(Attribute.builder()
                         .name("id")
@@ -84,9 +88,22 @@ public class AppStack extends Stack {
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .pointInTimeRecovery(true)
                 .build();
+        // Create GSIs for Group table
+        groupTable.addGlobalSecondaryIndex(GlobalSecondaryIndexProps.builder()
+                .indexName("TeacherIndex")
+                .partitionKey(Attribute.builder()
+                        .name("teacherId")
+                        .type(AttributeType.STRING)
+                        .build())
+                .projectionType(ProjectionType.ALL)
+                .build());
+        CfnOutput.Builder.create(this, "GroupTableName")
+                .exportName("GroupTableName")
+                .value(groupTable.getTableName())
+                .build();
 
         // Create User table
-        Table userTable = Table.Builder.create(this, "UserTable")
+        final Table userTable = Table.Builder.create(this, "UserTable")
                 .tableName("User")
                 .partitionKey(Attribute.builder()
                         .name("id")
@@ -100,17 +117,6 @@ public class AppStack extends Stack {
                 .removalPolicy(RemovalPolicy.DESTROY)
                 .pointInTimeRecovery(true)
                 .build();
-
-        // Create GSIs for Group table
-        groupTable.addGlobalSecondaryIndex(GlobalSecondaryIndexProps.builder()
-                .indexName("TeacherIndex")
-                .partitionKey(Attribute.builder()
-                        .name("teacherId")
-                        .type(AttributeType.STRING)
-                        .build())
-                .projectionType(ProjectionType.ALL)
-                .build());
-
         // Create GSIs for User table
         userTable.addGlobalSecondaryIndex(GlobalSecondaryIndexProps.builder()
                 .indexName("ParentIndex")
@@ -120,21 +126,30 @@ public class AppStack extends Stack {
                         .build())
                 .projectionType(ProjectionType.ALL)
                 .build());
-
-        // Output table names
-        CfnOutput.Builder.create(this, "SchoolTableName")
-                .exportName("SchoolTableName")
-                .value(schoolTable.getTableName())
-                .build();
-
-        CfnOutput.Builder.create(this, "GroupTableName")
-                .exportName("GroupTableName")
-                .value(groupTable.getTableName())
-                .build();
-
         CfnOutput.Builder.create(this, "UserTableName")
                 .exportName("UserTableName")
                 .value(userTable.getTableName())
+                .build();
+
+        // New table for tracking user states during post creation
+        final Table userStateTable = Table.Builder.create(this, "UserStateTable")
+                .tableName("UserState")
+                .partitionKey(Attribute.builder()
+                        .name("userId")
+                        .type(AttributeType.STRING)
+                        .build())
+                .sortKey(Attribute.builder()
+                        .name("commandType")
+                        .type(AttributeType.STRING)
+                        .build())
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .billingMode(BillingMode.PAY_PER_REQUEST)
+                .pointInTimeRecovery(true)
+                .timeToLiveAttribute("ttl")
+                .build();
+        CfnOutput.Builder.create(this, "UserStateTableName")
+                .exportName("UserStateTableName")
+                .value(userStateTable.getTableName())
                 .build();
 
         final Bucket bucket = Bucket.Builder.create(this, "rrtb-posts")
@@ -284,21 +299,6 @@ public class AppStack extends Stack {
         CfnOutput.Builder.create(this, "RrtbOutputQueueEventMapping")
                 .exportName("RrtbOutputQueueEventMapping")
                 .value(eventSourceMapping.getAttrEventSourceMappingArn())
-                .build();
-
-        // New table for tracking user states during post creation
-        Table userStateTable = Table.Builder.create(this, "UserStateTable")
-                .partitionKey(Attribute.builder()
-                        .name("userId")
-                        .type(AttributeType.STRING)
-                        .build())
-                .sortKey(Attribute.builder()
-                        .name("commandType")
-                        .type(AttributeType.STRING)
-                        .build())
-                .removalPolicy(RemovalPolicy.DESTROY)
-                .billingMode(BillingMode.PAY_PER_REQUEST)
-                .timeToLiveAttribute("ttl")
                 .build();
     }
 

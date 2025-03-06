@@ -32,7 +32,7 @@ class PostCommandHandlerTest extends AbstractTest {
 
     private String expectedPostCommandResponse() {
         return """
-                Please send the post file that you want to publish. The file should be previously uploaded to S3.
+                Please send the post file name that you want to publish. The file should be previously uploaded to S3.
                 """;
     }
 }

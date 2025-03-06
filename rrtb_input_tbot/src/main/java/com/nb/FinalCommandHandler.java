@@ -33,7 +33,7 @@ class FinalCommandHandler implements TelegramHandler<SendMessage> {
         return SendMessageUtils.compose(
                 spaceParser,
                 input,
-                "I don't how to handle your query: %s%nUse next commands: /start, /about".formatted(input.getMessage().getText())
+                "I don't know how to handle your query: %s%nUse next commands: /start, /about".formatted(input.getMessage().getText())
         );
     }
 

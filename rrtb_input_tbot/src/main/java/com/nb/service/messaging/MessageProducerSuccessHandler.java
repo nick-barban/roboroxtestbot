@@ -1,4 +1,4 @@
-package com.nb.service;
+package com.nb.service.messaging;
 
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.jms.listener.JMSListenerSuccessHandler;
@@ -21,7 +21,9 @@ public class MessageProducerSuccessHandler implements JMSListenerSuccessHandler 
     @Override
     public void handle(@NonNull Session session, @NonNull Message message) throws JMSException {
         messageCount.incrementAndGet();
-        LOG.debug("Successfully sent message: id={}, text={}", message.getJMSMessageID(), message.getBody(String.class));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Successfully sent message: id={}, text={}", message.getJMSMessageID(), message.getBody(String.class));
+        }
     }
 
     public int getMessageCount() {

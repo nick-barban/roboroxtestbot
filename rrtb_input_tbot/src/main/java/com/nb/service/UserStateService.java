@@ -1,9 +1,15 @@
 package com.nb.service;
 
+import com.nb.domain.RrtbCommand;
+import com.nb.domain.common.RrtbUserState;
 import io.micronaut.chatbots.telegram.api.Update;
 import jakarta.inject.Singleton;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -12,6 +18,10 @@ import java.util.Optional;
 
 @Singleton
 public class UserStateService {
+    public static final String USER_ID = "userId";
+    public static final String COMMAND_TYPE = "commandType";
+    public static final String STATE = "state";
+    public static final String TTL = "ttl";
     private final DynamoDbClient dynamoDbClient;
     private static final String TABLE_NAME = "UserStateTable";
     private static final long STATE_EXPIRY_HOURS = 24;
@@ -20,15 +30,14 @@ public class UserStateService {
         this.dynamoDbClient = dynamoDbClient;
     }
 
-    public void setPostState(Update update) {
-        String userId = String.valueOf(update.getMessage().getFrom().getId());
-        Map<String, AttributeValue> item = new HashMap<>();
-        item.put("userId", AttributeValue.builder().s(userId).build());
-        item.put("commandType", AttributeValue.builder().s("POST").build());
-        item.put("state", AttributeValue.builder().s("WAITING_FOR_FILE").build());
-        item.put("ttl", AttributeValue.builder().n(String.valueOf(Instant.now().plusSeconds(STATE_EXPIRY_HOURS * 3600).getEpochSecond())).build());
+    public void setPostState(String userId) {
+        final Map<String, AttributeValue> item = new HashMap<>();
+        item.put(USER_ID, AttributeValue.builder().s(userId).build());
+        item.put(COMMAND_TYPE, AttributeValue.builder().s(RrtbCommand.POST.name()).build());
+        item.put(STATE, AttributeValue.builder().s(RrtbUserState.WAITING_FOR_FILE.name()).build());
+        item.put(TTL, AttributeValue.builder().n(String.valueOf(Instant.now().plusSeconds(STATE_EXPIRY_HOURS * 3600).getEpochSecond())).build());
 
-        PutItemRequest request = PutItemRequest.builder()
+        final PutItemRequest request = PutItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .item(item)
                 .build();
@@ -36,41 +45,39 @@ public class UserStateService {
         dynamoDbClient.putItem(request);
     }
 
-    public Optional<String> getPostState(Update update) {
-        String userId = String.valueOf(update.getMessage().getFrom().getId());
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("userId", AttributeValue.builder().s(userId).build());
-        key.put("commandType", AttributeValue.builder().s("POST").build());
+    public Optional<String> getPostState(String userId) {
+        final Map<String, AttributeValue> key = new HashMap<>();
+        key.put(USER_ID, AttributeValue.builder().s(userId).build());
+        key.put(COMMAND_TYPE, AttributeValue.builder().s(RrtbCommand.POST.name()).build());
 
-        GetItemRequest request = GetItemRequest.builder()
+        final GetItemRequest request = GetItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(key)
                 .build();
 
-        GetItemResponse response = dynamoDbClient.getItem(request);
-        return response.hasItem() ? 
-                Optional.of(response.item().get("state").s()) : 
+        final GetItemResponse response = dynamoDbClient.getItem(request);
+        return response.hasItem() ?
+                Optional.of(response.item().get(STATE).s()) :
                 Optional.empty();
     }
 
-    public Map<String, String> getPostStateData(Update update) {
-        String userId = String.valueOf(update.getMessage().getFrom().getId());
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("userId", AttributeValue.builder().s(userId).build());
-        key.put("commandType", AttributeValue.builder().s("POST").build());
+    public Map<String, String> getPostStateData(String userId) {
+        final Map<String, AttributeValue> key = new HashMap<>();
+        key.put(USER_ID, AttributeValue.builder().s(userId).build());
+        key.put(COMMAND_TYPE, AttributeValue.builder().s(RrtbCommand.POST.name()).build());
 
-        GetItemRequest request = GetItemRequest.builder()
+        final GetItemRequest request = GetItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(key)
                 .build();
 
-        GetItemResponse response = dynamoDbClient.getItem(request);
-        Map<String, String> result = new HashMap<>();
+        final GetItemResponse response = dynamoDbClient.getItem(request);
+        final Map<String, String> result = new HashMap<>();
         
         if (response.hasItem()) {
-            Map<String, AttributeValue> item = response.item();
+            final Map<String, AttributeValue> item = response.item();
             item.forEach((attrKey, value) -> {
-                if (!attrKey.equals("userId") && !attrKey.equals("commandType") && !attrKey.equals("state") && !attrKey.equals("ttl")) {
+                if (!attrKey.equals(USER_ID) && !attrKey.equals(COMMAND_TYPE) && !attrKey.equals(STATE) && !attrKey.equals(TTL)) {
                     result.put(attrKey, value.s());
                 }
             });
@@ -80,18 +87,18 @@ public class UserStateService {
     }
 
     public void updatePostState(Update update, String state, Map<String, String> data) {
-        String userId = String.valueOf(update.getMessage().getFrom().getId());
-        Map<String, AttributeValue> item = new HashMap<>();
-        item.put("userId", AttributeValue.builder().s(userId).build());
-        item.put("commandType", AttributeValue.builder().s("POST").build());
-        item.put("state", AttributeValue.builder().s(state).build());
-        item.put("ttl", AttributeValue.builder().n(String.valueOf(Instant.now().plusSeconds(STATE_EXPIRY_HOURS * 3600).getEpochSecond())).build());
+        final String userId = String.valueOf(update.getMessage().getFrom().getId());
+        final Map<String, AttributeValue> item = new HashMap<>();
+        item.put(USER_ID, AttributeValue.builder().s(userId).build());
+        item.put(COMMAND_TYPE, AttributeValue.builder().s("POST").build());
+        item.put(STATE, AttributeValue.builder().s(state).build());
+        item.put(TTL, AttributeValue.builder().n(String.valueOf(Instant.now().plusSeconds(STATE_EXPIRY_HOURS * 3600).getEpochSecond())).build());
 
         data.forEach((key, value) -> 
             item.put(key, AttributeValue.builder().s(value).build())
         );
 
-        PutItemRequest request = PutItemRequest.builder()
+        final PutItemRequest request = PutItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .item(item)
                 .build();
@@ -100,12 +107,12 @@ public class UserStateService {
     }
 
     public void clearPostState(Update update) {
-        String userId = String.valueOf(update.getMessage().getFrom().getId());
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("userId", AttributeValue.builder().s(userId).build());
-        key.put("commandType", AttributeValue.builder().s("POST").build());
+        final String userId = String.valueOf(update.getMessage().getFrom().getId());
+        final Map<String, AttributeValue> key = new HashMap<>();
+        key.put(USER_ID, AttributeValue.builder().s(userId).build());
+        key.put(COMMAND_TYPE, AttributeValue.builder().s("POST").build());
 
-        DeleteItemRequest request = DeleteItemRequest.builder()
+        final DeleteItemRequest request = DeleteItemRequest.builder()
                 .tableName(TABLE_NAME)
                 .key(key)
                 .build();

@@ -1,5 +1,6 @@
 package com.nb.service;
 
+import com.nb.service.messaging.MessageProducer;
 import io.micronaut.chatbots.telegram.api.Update;
 import io.micronaut.json.JsonMapper;
 import jakarta.inject.Singleton;
