@@ -79,57 +79,57 @@ Resources:
           - - Key for encrypting S3 bucket
             - Ref: AWS::StackName
 
-  FileAssetsBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName:
-        Fn::Join:
-          - "-"
-          - - cdk
-            - Ref: Qualifier
-            - assets
-            - Ref: AWS::AccountId
-            - Ref: AWS::Region
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: aws:kms
-              KMSMasterKeyID:
-                Fn::GetAtt:
-                  - FileAssetsBucketEncryptionKey
-                  - Arn
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      VersioningConfiguration:
-        Status: Enabled
+  # FileAssetsBucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName:
+  #       Fn::Join:
+  #         - "-"
+  #         - - cdk
+  #           - Ref: Qualifier
+  #           - assets
+  #           - Ref: AWS::AccountId
+  #           - Ref: AWS::Region
+  #     BucketEncryption:
+  #       ServerSideEncryptionConfiguration:
+  #         - ServerSideEncryptionByDefault:
+  #             SSEAlgorithm: aws:kms
+  #             KMSMasterKeyID:
+  #               Fn::GetAtt:
+  #                 - FileAssetsBucketEncryptionKey
+  #                 - Arn
+  #     PublicAccessBlockConfiguration:
+  #       BlockPublicAcls: true
+  #       BlockPublicPolicy: true
+  #       IgnorePublicAcls: true
+  #       RestrictPublicBuckets: true
+  #     VersioningConfiguration:
+  #       Status: Enabled
 
-  FileAssetsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket:
-        Ref: FileAssetsBucket
-      PolicyDocument:
-        Statement:
-          - Action: s3:*
-            Effect: Deny
-            Principal: "*"
-            Resource:
-              - Fn::Join:
-                  - ""
-                  - - Fn::GetAtt:
-                        - FileAssetsBucket
-                        - Arn
-                    - /*
-              - Fn::GetAtt:
-                  - FileAssetsBucket
-                  - Arn
-            Condition:
-              Bool:
-                aws:SecureTransport: false
-        Version: "2012-10-17"
+  # FileAssetsBucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties:
+  #     Bucket:
+  #       Ref: FileAssetsBucket
+  #     PolicyDocument:
+  #       Statement:
+  #         - Action: s3:*
+  #           Effect: Deny
+  #           Principal: "*"
+  #           Resource:
+  #             - Fn::Join:
+  #                 - ""
+  #                 - - Fn::GetAtt:
+  #                       - FileAssetsBucket
+  #                       - Arn
+  #                   - /*
+  #             - Fn::GetAtt:
+  #                 - FileAssetsBucket
+  #                 - Arn
+  #           Condition:
+  #             Bool:
+  #               aws:SecureTransport: false
+  #       Version: "2012-10-17"
 
   DeploymentActionRole:
     Type: AWS::IAM::Role
@@ -164,13 +164,31 @@ Outputs:
   BucketName:
     Description: The name of the S3 bucket owned by the CDK toolkit stack
     Value:
-      Ref: FileAssetsBucket
+      Fn::Join:
+        - "-"
+        - - cdk
+          - Ref: Qualifier
+          - assets
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
   BucketDomainName:
     Description: The domain name of the S3 bucket owned by the CDK toolkit stack
     Value:
-      Fn::GetAtt:
-        - FileAssetsBucket
-        - DomainName
+      Fn::Join:
+        - "."
+        - - Fn::Join:
+            - "-"
+            - - cdk
+              - Ref: Qualifier
+              - assets
+              - Ref: AWS::AccountId
+              - Ref: AWS::Region
+          - s3
+          - Ref: AWS::Region
+          - Fn::Join:
+              - ""
+              - - amazonaws
+                - Ref: AWS::URLSuffix
   FileAssetKeyArn:
     Description: The ARN of the KMS key used to encrypt the asset bucket
     Value:
