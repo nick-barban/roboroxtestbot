@@ -45,13 +45,12 @@ jobs:
 
   deploy:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+#    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: production
     permissions:
       id-token: write
       contents: read
-      ssm: read
     steps:
       - uses: actions/checkout@v4
 
@@ -86,12 +85,11 @@ jobs:
         run: |
           cd rrtb_infra
           cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1 \
-            --no-bootstrap-customer-key \
             --cloudformation-execution-policies arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/AWSCloudFormationFullAccess \
-            --no-execute \
             --toolkit-stack-name CDKToolkit \
             --trust ${{ secrets.AWS_ACCOUNT_ID }} \
             --force
+            --template ../bootstrap-template.yaml
 
       - name: Deploy CDK app
         run: |
