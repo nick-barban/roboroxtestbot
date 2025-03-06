@@ -1,4 +1,4 @@
-package com.nb.service;
+package com.nb.service.messaging;
 
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.jms.listener.JMSListenerErrorHandler;
@@ -19,8 +19,9 @@ public class MessageProducerErrorHandler implements JMSListenerErrorHandler {
         try {
             LOG.error("Error occurred when try to send message: id=%s, text=%s".formatted(message.getJMSMessageID(), message.getBody(String.class)), ex);
         } catch (JMSException e) {
-            LOG.error("Error occurred when try to send message. Could not extract JMS message id when created error message.", e);
-            throw new RuntimeException(e);
+            final String errorMessage = "Error occurred when try to send message. Could not extract JMS message id when created error message.";
+            LOG.error(errorMessage, e);
+            throw new RuntimeException(errorMessage, e);
         }
     }
 }

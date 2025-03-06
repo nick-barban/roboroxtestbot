@@ -1,4 +1,4 @@
-package com.nb.service;
+package com.nb.service.messaging;
 
 import io.micronaut.jms.annotations.JMSProducer;
 import io.micronaut.jms.annotations.Queue;
