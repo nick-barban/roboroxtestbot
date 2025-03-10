@@ -81,15 +81,25 @@ jobs:
       - name: Build
         run: mvn clean package -DskipTests
 
-      - name: CDK Bootstrap
+      - name: Setup CDK Environment
         run: |
           cd rrtb_infra
-          cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1 \
-            --cloudformation-execution-policies arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:policy/AWSCloudFormationFullAccess \
-            --toolkit-stack-name CDKToolkit \
-            --trust ${{ secrets.AWS_ACCOUNT_ID }} \
-            --force
-            --template ../bootstrap-template.yaml
+          # Check if SSM parameter exists
+          if ! aws ssm get-parameter --name "/cdk-bootstrap/hnb659fds/version" 2>/dev/null; then
+            # Create SSM parameter if it doesn't exist
+            aws ssm put-parameter \
+              --name "/cdk-bootstrap/hnb659fds/version" \
+              --type "String" \
+              --value "1" \
+              --overwrite
+          fi
+
+          #Set environment variables for CDK
+          echo "CDK_DEFAULT_ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
+          echo "CDK_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
+
+          #Skip bootstrap by setting environment variable
+          echo "CDK_SKIP_BOOTSTRAP=1" >> $GITHUB_ENV
 
       - name: Deploy CDK app
         run: |
