@@ -78,43 +78,11 @@ jobs:
       - name: Install CDK CLI
         run: npm install -g aws-cdk
 
-      - name: Setup CDK Environment
-        run: |
-          cd rrtb_infra
-          # Print AWS CLI version for debugging
-          aws --version
-          
-          # Set environment variables for CDK
-          echo "CDK_DEFAULT_ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
-          echo "CDK_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
-          
-          # Skip bootstrap check entirely
-          echo "CDK_SKIP_BOOTSTRAP=1" >> $GITHUB_ENV
-          
-          # Create a fake cdk.context.json file to bypass bootstrap check
-          echo '{
-            "bootstrapVersion": 1,
-            "bootstrapped": {
-              "aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1": {
-                "bootstrapVersion": 1,
-                "bucketName": "cdk-hnb659fds-assets-${{ secrets.AWS_ACCOUNT_ID }}-us-east-1"
-              }
-            }
-          }' > cdk.context.json
-          
-          # Create a ~/.cdk.json file to further bypass bootstrap
-          mkdir -p ~/.cdk
-          echo '{
-            "bootstrapVersion": 1,
-            "bootstrapped": {
-              "aws://${{ secrets.AWS_ACCOUNT_ID }}/us-east-1": {
-                "bootstrapVersion": 1,
-                "bucketName": "cdk-hnb659fds-assets-${{ secrets.AWS_ACCOUNT_ID }}-us-east-1"
-              }
-            }
-          }' > ~/.cdk/config.json
-
       - name: Deploy CDK app
+        env:
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
+          CDK_DEFAULT_REGION: us-east-1
+          CDK_SKIP_BOOTSTRAP: 1
         run: |
           cd rrtb_infra
           # Use --ignore-errors to continue even if there are errors
