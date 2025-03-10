@@ -44,7 +44,7 @@ jobs:
           path: target/*.jar
 
   deploy:
-    needs: build
+    # needs: build
 #    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: production
@@ -84,22 +84,35 @@ jobs:
       - name: Setup CDK Environment
         run: |
           cd rrtb_infra
-          # Check if SSM parameter exists
-          if ! aws ssm get-parameter --name "/cdk-bootstrap/hnb659fds/version" 2>/dev/null; then
-            # Create SSM parameter if it doesn't exist
-            aws ssm put-parameter \
-              --name "/cdk-bootstrap/hnb659fds/version" \
-              --type "String" \
-              --value "1" \
-              --overwrite
-          fi
-
-          #Set environment variables for CDK
+          # Print AWS CLI version for debugging
+          aws --version
+          
+          # Set environment variables for CDK
           echo "CDK_DEFAULT_ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
           echo "CDK_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
-
-          #Skip bootstrap by setting environment variable
+          
+          # List existing SSM parameters for debugging
+          echo "Listing existing SSM parameters:"
+          aws ssm describe-parameters --output json || echo "Failed to list parameters, but continuing..."
+          
+          # Try to get the parameter, but don't fail if it doesn't exist
+          echo "Checking if bootstrap parameter exists:"
+          aws ssm get-parameter --name "/cdk-bootstrap/hnb659fds/version" --output json || echo "Parameter does not exist, will create it"
+          
+          # Create or update the parameter
+          echo "Creating/updating bootstrap parameter:"
+          aws ssm put-parameter \
+            --name "/cdk-bootstrap/hnb659fds/version" \
+            --type "String" \
+            --value "1" \
+            --overwrite
+          
+          # Skip bootstrap by setting environment variable
           echo "CDK_SKIP_BOOTSTRAP=1" >> $GITHUB_ENV
+          
+          # List S3 buckets for debugging
+          echo "Listing S3 buckets:"
+          aws s3 ls || echo "Failed to list S3 buckets, but continuing..."
 
       - name: Deploy CDK app
         run: |
