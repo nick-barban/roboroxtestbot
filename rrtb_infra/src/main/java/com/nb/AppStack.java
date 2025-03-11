@@ -91,6 +91,9 @@ public class AppStack extends Stack {
                         "s3:GetBucketPolicy",
                         "s3:PutBucketPublicAccessBlock",
                         "s3:GetBucketPublicAccessBlock",
+                        "s3:GetBucketAcl",
+                        "s3:PutBucketAcl",
+                        "s3:DeleteBucket",
                         // CloudFormation permissions
                         "cloudformation:CreateStack",
                         "cloudformation:DeleteStack",
@@ -113,6 +116,8 @@ public class AppStack extends Stack {
                         "arn:aws:s3:::cdk-hnb659fds-assets-" + this.getAccount() + "-" + this.getRegion() + "/*",
                         "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion(),
                         "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion() + "/*",
+                        "arn:aws:s3:::cdk-*",
+                        "arn:aws:s3:::cdk-*/*",
                         // CloudFormation resources
                         "arn:aws:cloudformation:" + this.getRegion() + ":" + this.getAccount() + ":stack/*"))
                 .build();
@@ -430,6 +435,34 @@ public class AppStack extends Stack {
         CfnOutput.Builder.create(this, "RrtbOutputQueueEventMapping")
                 .exportName("RrtbOutputQueueEventMapping")
                 .value(eventSourceMapping.getAttrEventSourceMappingArn())
+                .build();
+
+        // Create CDK assets bucket with proper permissions
+        final Bucket cdkAssetsBucket = Bucket.Builder.create(this, "CdkAssetsBucket")
+                .bucketName("cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion())
+                .blockPublicAccess(BlockPublicAccess.BLOCK_ALL)
+                .encryption(BucketEncryption.S3_MANAGED)
+                .versioned(true)
+                .removalPolicy(RemovalPolicy.RETAIN)
+                .build();
+
+        // Add bucket policy to allow GitHub Actions role access
+        cdkAssetsBucket.addToResourcePolicy(PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList(
+                        "s3:GetObject",
+                        "s3:PutObject",
+                        "s3:ListBucket",
+                        "s3:DeleteObject"))
+                .principals(Arrays.asList(new ServicePrincipal("cloudformation.amazonaws.com")))
+                .resources(Arrays.asList(
+                        cdkAssetsBucket.getBucketArn(),
+                        cdkAssetsBucket.getBucketArn() + "/*"))
+                .build());
+
+        CfnOutput.Builder.create(this, "CdkAssetsBucketName")
+                .exportName("CdkAssetsBucketName")
+                .value(cdkAssetsBucket.getBucketName())
                 .build();
     }
 
