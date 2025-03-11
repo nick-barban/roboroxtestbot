@@ -23,6 +23,9 @@ import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
 import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.iam.Role;
+import software.amazon.awscdk.services.iam.AccountPrincipal;
+import software.amazon.awscdk.services.iam.ArnPrincipal;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 import software.amazon.awscdk.services.lambda.Code;
@@ -86,6 +89,9 @@ public class AppStack extends Stack {
                         "s3:PutBucketPolicy",
                         "s3:CreateBucket",
                         "s3:PutBucketVersioning",
+                        "s3:GetBucketPolicy",
+                        "s3:PutBucketPublicAccessBlock",
+                        "s3:GetBucketPublicAccessBlock",
                         // CloudFormation permissions
                         "cloudformation:CreateStack",
                         "cloudformation:DeleteStack",
@@ -125,13 +131,42 @@ public class AppStack extends Stack {
                         "iam:AttachRolePolicy",
                         "iam:DetachRolePolicy",
                         "iam:PassRole",
+                        "iam:UpdateAssumeRolePolicy",
+                        "iam:ListRolePolicies",
+                        "iam:ListAttachedRolePolicies",
                         "sts:AssumeRole"))
                 .resources(Arrays.asList(
                         "arn:aws:iam::" + this.getAccount() + ":role/*",
-                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-rrtb-file-publishing-role-" + this.getRegion(),
-                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-rrtb-deploy-role-" + this.getRegion(),
-                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-rrtb-lookup-role-" + this.getRegion()))
+                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-*"))
                 .build();
+
+        // Add a trust policy statement to allow GitHub Actions to assume CDK roles
+        final PolicyStatement trustPolicy = PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList("sts:AssumeRole"))
+                .principals(Arrays.asList(
+                        new ArnPrincipal("arn:aws:iam::" + this.getAccount() + ":user/github-actions"),
+                        new ArnPrincipal("arn:aws:iam::" + this.getAccount() + ":role/GitHubActionsRole")))
+                .build();
+
+        // Create CDK roles with trust policy
+        final Role deployRole = Role.Builder.create(this, "CdkDeployRole")
+                .roleName("cdk-rrtb-deploy-role-" + this.getRegion())
+                .assumedBy(new AccountPrincipal(this.getAccount()))
+                .build();
+        deployRole.addToPolicy(trustPolicy);
+
+        final Role publishingRole = Role.Builder.create(this, "CdkPublishingRole")
+                .roleName("cdk-rrtb-file-publishing-role-" + this.getRegion())
+                .assumedBy(new AccountPrincipal(this.getAccount()))
+                .build();
+        publishingRole.addToPolicy(trustPolicy);
+
+        final Role lookupRole = Role.Builder.create(this, "CdkLookupRole")
+                .roleName("cdk-rrtb-lookup-role-" + this.getRegion())
+                .assumedBy(new AccountPrincipal(this.getAccount()))
+                .build();
+        lookupRole.addToPolicy(trustPolicy);
 
         final ManagedPolicy githubActionsManagedPolicy = ManagedPolicy.Builder.create(this, "GitHubActionsPolicy")
                 .managedPolicyName("GitHubActionsPolicy")
