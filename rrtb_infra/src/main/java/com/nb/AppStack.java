@@ -61,6 +61,7 @@ public class AppStack extends Stack {
         final PolicyStatement githubActionsPolicy = PolicyStatement.Builder.create()
                 .effect(Effect.ALLOW)
                 .actions(Arrays.asList(
+                        // ECR permissions
                         "ecr:SetRepositoryPolicy",
                         "ecr:GetRepositoryPolicy",
                         "ecr:InitiateLayerUpload",
@@ -72,25 +73,63 @@ public class AppStack extends Stack {
                         "ecr:DescribeRepositories",
                         "ecr:DeleteRepository",
                         "ecr:GetAuthorizationToken",
+                        // SSM permissions
                         "ssm:PutParameter",
                         "ssm:GetParameter",
                         "ssm:DeleteParameter",
+                        // S3 permissions
                         "s3:PutObject",
                         "s3:GetObject",
                         "s3:ListBucket",
                         "s3:DeleteObject",
                         "s3:GetBucketLocation",
-                        "s3:PutBucketPolicy"))
+                        "s3:PutBucketPolicy",
+                        "s3:CreateBucket",
+                        "s3:PutBucketVersioning",
+                        // CloudFormation permissions
+                        "cloudformation:CreateStack",
+                        "cloudformation:DeleteStack",
+                        "cloudformation:DescribeStacks",
+                        "cloudformation:UpdateStack",
+                        "cloudformation:CreateChangeSet",
+                        "cloudformation:DeleteChangeSet",
+                        "cloudformation:DescribeChangeSet",
+                        "cloudformation:ExecuteChangeSet",
+                        "cloudformation:ListStacks",
+                        "cloudformation:GetTemplateSummary",
+                        "cloudformation:DescribeStackEvents"))
                 .resources(Arrays.asList(
+                        // ECR resources
                         "arn:aws:ecr:" + this.getRegion() + ":" + this.getAccount() + ":repository/*",
+                        // SSM resources
                         "arn:aws:ssm:" + this.getRegion() + ":" + this.getAccount() + ":parameter/cdk-bootstrap/*",
+                        // S3 resources
                         "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion(),
-                        "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion() + "/*"))
+                        "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion() + "/*",
+                        // CloudFormation resources
+                        "arn:aws:cloudformation:" + this.getRegion() + ":" + this.getAccount() + ":stack/*"))
+                .build();
+
+        // Add a separate policy statement for IAM permissions
+        final PolicyStatement iamPolicy = PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList(
+                        "iam:CreateRole",
+                        "iam:DeleteRole",
+                        "iam:GetRole",
+                        "iam:PutRolePolicy",
+                        "iam:DeleteRolePolicy",
+                        "iam:GetRolePolicy",
+                        "iam:AttachRolePolicy",
+                        "iam:DetachRolePolicy",
+                        "iam:PassRole"))
+                .resources(Arrays.asList(
+                        "arn:aws:iam::" + this.getAccount() + ":role/*"))
                 .build();
 
         final ManagedPolicy githubActionsManagedPolicy = ManagedPolicy.Builder.create(this, "GitHubActionsPolicy")
                 .managedPolicyName("GitHubActionsPolicy")
-                .statements(List.of(githubActionsPolicy))
+                .statements(Arrays.asList(githubActionsPolicy, iamPolicy))
                 .description("Policy for GitHub Actions to manage CDK resources")
                 .build();
 
