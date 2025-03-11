@@ -18,3 +18,4 @@ out/
 /.PVS-Studio/ide-warnings.json
 /.PVS-Studio/settings.json
 rrtb_output_tbot/dependecy-reduced-pom.xml
+githubactions.log

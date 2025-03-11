@@ -82,7 +82,7 @@ jobs:
       - name: Deploy CDK app
         env:
           CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
-          CDK_DEFAULT_REGION: us-east-1
+          CDK_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
         run: |
           cd rrtb_infra
           cdk deploy --all --require-approval never --force
