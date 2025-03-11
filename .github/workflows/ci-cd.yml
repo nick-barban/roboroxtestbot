@@ -41,7 +41,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: target/*.jar
+          path: |
+            **/target/*.jar
+            rrtb_input_tbot/target/*.jar
+            rrtb_output_tbot/target/*.jar
+            rrtb_daily_post_lambda/target/*.jar
+            rrtb_infra/target/*.jar
 
   deploy:
     needs: build
@@ -82,7 +87,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
-          path: target/
+          path: ./
           
       - name: Build CDK project
         run: |
