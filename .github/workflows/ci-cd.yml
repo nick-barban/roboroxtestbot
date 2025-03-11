@@ -77,6 +77,17 @@ jobs:
 
       - name: Install CDK CLI
         run: npm install -g aws-cdk
+        
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: target/
+          
+      - name: Build CDK project
+        run: |
+          # Build only the CDK project and its dependencies
+          mvn clean package -DskipTests -pl rrtb_infra,rrtb_input_tbot,rrtb_output_tbot,rrtb_daily_post_lambda
 
       - name: Deploy CDK app
         env:
