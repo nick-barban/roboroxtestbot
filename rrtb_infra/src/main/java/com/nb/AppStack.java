@@ -104,6 +104,8 @@ public class AppStack extends Stack {
                         // SSM resources
                         "arn:aws:ssm:" + this.getRegion() + ":" + this.getAccount() + ":parameter/cdk-bootstrap/*",
                         // S3 resources
+                        "arn:aws:s3:::cdk-hnb659fds-assets-" + this.getAccount() + "-" + this.getRegion(),
+                        "arn:aws:s3:::cdk-hnb659fds-assets-" + this.getAccount() + "-" + this.getRegion() + "/*",
                         "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion(),
                         "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion() + "/*",
                         // CloudFormation resources
