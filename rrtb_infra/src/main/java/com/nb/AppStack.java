@@ -128,7 +128,9 @@ public class AppStack extends Stack {
                         "sts:AssumeRole"))
                 .resources(Arrays.asList(
                         "arn:aws:iam::" + this.getAccount() + ":role/*",
-                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-rrtb-file-publishing-role-" + this.getRegion()))
+                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-rrtb-file-publishing-role-" + this.getRegion(),
+                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-rrtb-deploy-role-" + this.getRegion(),
+                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-rrtb-lookup-role-" + this.getRegion()))
                 .build();
 
         final ManagedPolicy githubActionsManagedPolicy = ManagedPolicy.Builder.create(this, "GitHubActionsPolicy")
