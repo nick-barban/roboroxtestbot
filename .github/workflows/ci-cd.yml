@@ -21,6 +21,7 @@ jobs:
   build-and-deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    environment: production
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -34,6 +35,11 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -42,7 +48,7 @@ jobs:
 
       - name: Create GitHub Actions Role
         run: |
-          # Create the role if it doesn't exist
+          # Create initial role with trust policy
           if ! aws iam get-role --role-name github-actions-role 2>/dev/null; then
             aws iam create-role \
               --role-name github-actions-role \
@@ -72,7 +78,7 @@ jobs:
         run: |
           cd rrtb_infra
           npm install -g aws-cdk
-          cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ env.AWS_REGION }}
+          cdk bootstrap aws://${{ env.AWS_ACCOUNT_ID }}/${{ env.AWS_REGION }}
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
