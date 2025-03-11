@@ -57,6 +57,48 @@ public class AppStack extends Stack {
     public AppStack(final Construct parent, final String id, final StackProps props) {
         super(parent, id, props);
 
+        // Create GitHub Actions IAM policy
+        final PolicyStatement githubActionsPolicy = PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList(
+                        "ecr:SetRepositoryPolicy",
+                        "ecr:GetRepositoryPolicy",
+                        "ecr:InitiateLayerUpload",
+                        "ecr:UploadLayerPart",
+                        "ecr:CompleteLayerUpload",
+                        "ecr:BatchCheckLayerAvailability",
+                        "ecr:PutImage",
+                        "ecr:CreateRepository",
+                        "ecr:DescribeRepositories",
+                        "ecr:DeleteRepository",
+                        "ecr:GetAuthorizationToken",
+                        "ssm:PutParameter",
+                        "ssm:GetParameter",
+                        "ssm:DeleteParameter",
+                        "s3:PutObject",
+                        "s3:GetObject",
+                        "s3:ListBucket",
+                        "s3:DeleteObject",
+                        "s3:GetBucketLocation",
+                        "s3:PutBucketPolicy"))
+                .resources(Arrays.asList(
+                        "arn:aws:ecr:" + this.getRegion() + ":" + this.getAccount() + ":repository/*",
+                        "arn:aws:ssm:" + this.getRegion() + ":" + this.getAccount() + ":parameter/cdk-bootstrap/*",
+                        "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion(),
+                        "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion() + "/*"))
+                .build();
+
+        final ManagedPolicy githubActionsManagedPolicy = ManagedPolicy.Builder.create(this, "GitHubActionsPolicy")
+                .managedPolicyName("GitHubActionsPolicy")
+                .statements(List.of(githubActionsPolicy))
+                .description("Policy for GitHub Actions to manage CDK resources")
+                .build();
+
+        CfnOutput.Builder.create(this, "GitHubActionsPolicyArn")
+                .exportName("GitHubActionsPolicyArn")
+                .value(githubActionsManagedPolicy.getManagedPolicyArn())
+                .build();
+
         // Create School table
         final Table schoolTable = Table.Builder.create(this, "SchoolTable")
                 .tableName("School")
