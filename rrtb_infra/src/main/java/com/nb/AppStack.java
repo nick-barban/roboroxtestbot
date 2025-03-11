@@ -472,7 +472,8 @@ public class AppStack extends Stack {
                         "s3:GetObject",
                         "s3:PutObject",
                         "s3:ListBucket",
-                        "s3:DeleteObject"))
+                        "s3:DeleteObject",
+                        "s3:GetBucketLocation"))
                 .principals(Arrays.asList(new ServicePrincipal("cloudformation.amazonaws.com")))
                 .resources(Arrays.asList(
                         cdkAssetsBucket.getBucketArn(),
