@@ -76,6 +76,9 @@ jobs:
           name: build-artifacts
           path: ./
 
+      - name: Bootstrap CDK
+        run: npx cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+
       - name: Deploy CDK app
         env:
           CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
