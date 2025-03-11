@@ -9,9 +9,12 @@ public class Main {
     public static void main(final String[] args) {
         App app = new App();
 
-        // Create a custom synthesizer that skips bootstrap validation
-        DefaultStackSynthesizer synthesizer = DefaultStackSynthesizer.Builder.create()
+        // Create a custom synthesizer with bootstrap options
+        final DefaultStackSynthesizer synthesizer = DefaultStackSynthesizer.Builder.create()
             .generateBootstrapVersionRule(false)
+            .qualifier("rrtb")  // Custom qualifier to use a different bucket name
+            .bootstrapStackVersionSsmParameter("/cdk-bootstrap/rrtb/version")
+            .fileAssetsBucketName("cdk-rrtb-assets-${AWS::AccountId}-${AWS::Region}")
             .build();
 
         // Create the main application stack
