@@ -105,21 +105,37 @@ public class AppStack extends Stack {
                         "cloudformation:ExecuteChangeSet",
                         "cloudformation:ListStacks",
                         "cloudformation:GetTemplateSummary",
-                        "cloudformation:DescribeStackEvents"))
+                        "cloudformation:DescribeStackEvents",
+                        "cloudformation:ValidateTemplate",
+                        // Bootstrap permissions
+                        "ssm:GetParameter",
+                        "ssm:PutParameter",
+                        "ssm:DeleteParameter",
+                        "kms:Create*",
+                        "kms:Describe*",
+                        "kms:Enable*",
+                        "kms:List*",
+                        "kms:Put*",
+                        "kms:Update*",
+                        "kms:Revoke*",
+                        "kms:Disable*",
+                        "kms:Get*",
+                        "kms:Delete*",
+                        "kms:ScheduleKeyDeletion",
+                        "kms:CancelKeyDeletion"))
                 .resources(Arrays.asList(
                         // ECR resources
                         "arn:aws:ecr:" + this.getRegion() + ":" + this.getAccount() + ":repository/*",
                         // SSM resources
-                        "arn:aws:ssm:" + this.getRegion() + ":" + this.getAccount() + ":parameter/cdk-bootstrap/*",
+                        "arn:aws:ssm:" + this.getRegion() + ":" + this.getAccount() + ":parameter/*",
                         // S3 resources
-                        "arn:aws:s3:::cdk-hnb659fds-assets-" + this.getAccount() + "-" + this.getRegion(),
-                        "arn:aws:s3:::cdk-hnb659fds-assets-" + this.getAccount() + "-" + this.getRegion() + "/*",
-                        "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion(),
-                        "arn:aws:s3:::cdk-rrtb-assets-" + this.getAccount() + "-" + this.getRegion() + "/*",
                         "arn:aws:s3:::cdk-*",
                         "arn:aws:s3:::cdk-*/*",
                         // CloudFormation resources
-                        "arn:aws:cloudformation:" + this.getRegion() + ":" + this.getAccount() + ":stack/*"))
+                        "arn:aws:cloudformation:" + this.getRegion() + ":" + this.getAccount() + ":stack/CDKToolkit/*",
+                        "arn:aws:cloudformation:" + this.getRegion() + ":" + this.getAccount() + ":stack/*",
+                        // KMS resources
+                        "arn:aws:kms:" + this.getRegion() + ":" + this.getAccount() + ":key/*"))
                 .build();
 
         // Add a separate policy statement for IAM permissions
@@ -138,10 +154,13 @@ public class AppStack extends Stack {
                         "iam:UpdateAssumeRolePolicy",
                         "iam:ListRolePolicies",
                         "iam:ListAttachedRolePolicies",
+                        "iam:CreatePolicy",
+                        "iam:DeletePolicy",
+                        "iam:UpdatePolicy",
                         "sts:AssumeRole"))
                 .resources(Arrays.asList(
                         "arn:aws:iam::" + this.getAccount() + ":role/*",
-                        "arn:aws:iam::" + this.getAccount() + ":role/cdk-*"))
+                        "arn:aws:iam::" + this.getAccount() + ":policy/*"))
                 .build();
 
         // Create CDK roles with trust relationships
