@@ -15,6 +15,8 @@ public class Main {
             .qualifier("rrtb")  // Custom qualifier to use a different bucket name
             .bootstrapStackVersionSsmParameter("/cdk-bootstrap/rrtb/version")
             .fileAssetsBucketName("cdk-rrtb-assets-${AWS::AccountId}-${AWS::Region}")
+            .imageAssetsRepositoryName("rrtb")  // Use existing ECR repository
+            .dockerTagPrefix("rrtb")  // Use custom prefix for Docker images
             .build();
 
         // Create the main application stack
