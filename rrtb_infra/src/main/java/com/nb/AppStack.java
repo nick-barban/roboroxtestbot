@@ -193,9 +193,13 @@ public class AppStack extends Stack {
                         "dynamodb:Scan"))
                 .resources(Arrays.asList(
                         userStateTable.getTableArn(),
+                        userStateTable.getTableArn() + "/index/*",
                         userTable.getTableArn(),
+                        userTable.getTableArn() + "/index/*",
                         groupTable.getTableArn(),
-                        schoolTable.getTableArn()))
+                        groupTable.getTableArn() + "/index/*",
+                        schoolTable.getTableArn(),
+                        schoolTable.getTableArn() + "/index/*"))
                 .build();
         rrtbInputLambda.addToRolePolicy(dynamoDbPolicy);
 
