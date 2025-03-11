@@ -180,6 +180,24 @@ public class AppStack extends Stack {
                 .build();
         final IManagedPolicy sqsCreateQueuePolicy = ManagedPolicy.fromAwsManagedPolicyName("AmazonSQSFullAccess");
         Objects.requireNonNull(rrtbInputLambda.getRole()).addManagedPolicy(sqsCreateQueuePolicy);
+        
+        // Add DynamoDB permissions
+        final PolicyStatement dynamoDbPolicy = PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList(
+                        "dynamodb:GetItem",
+                        "dynamodb:PutItem",
+                        "dynamodb:UpdateItem",
+                        "dynamodb:DeleteItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan"))
+                .resources(Arrays.asList(
+                        userStateTable.getTableArn(),
+                        userTable.getTableArn(),
+                        groupTable.getTableArn(),
+                        schoolTable.getTableArn()))
+                .build();
+        rrtbInputLambda.addToRolePolicy(dynamoDbPolicy);
 
         final FunctionUrl rrtbInputUrl = rrtbInputLambda.addFunctionUrl(FunctionUrlOptions.builder()
                 .authType(FunctionUrlAuthType.NONE)
