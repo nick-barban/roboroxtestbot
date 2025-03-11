@@ -23,7 +23,6 @@ import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
 import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 import software.amazon.awscdk.services.lambda.Code;
