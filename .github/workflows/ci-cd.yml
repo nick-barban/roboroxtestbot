@@ -45,7 +45,6 @@ jobs:
 
   deploy:
     needs: build
-#    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment: production
     permissions:
@@ -76,19 +75,6 @@ jobs:
         with:
           name: build-artifacts
           path: ./
-          
-      - name: Bootstrap CDK
-        env:
-          CDK_DEFAULT_ACCOUNT: ${{ secrets.AWS_ACCOUNT_ID }}
-          CDK_DEFAULT_REGION: us-east-1
-        run: |
-          cdk bootstrap aws://$CDK_DEFAULT_ACCOUNT/$CDK_DEFAULT_REGION \
-            --qualifier rrtb \
-            --bootstrap-bucket-name cdk-rrtb-assets-$CDK_DEFAULT_ACCOUNT-$CDK_DEFAULT_REGION \
-            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-            --trust $CDK_DEFAULT_ACCOUNT \
-            --no-bootstrap-customer-key \
-            --no-public-access-block-configuration
 
       - name: Deploy CDK app
         env:
@@ -96,5 +82,4 @@ jobs:
           CDK_DEFAULT_REGION: us-east-1
         run: |
           cd rrtb_infra
-          # Use --ignore-errors to continue even if there are errors
-          cdk deploy --all --require-approval never --no-previous-parameters --ignore-errors
+          cdk deploy --all --require-approval never --force
