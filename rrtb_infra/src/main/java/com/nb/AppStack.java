@@ -24,8 +24,7 @@ import software.amazon.awscdk.services.iam.IManagedPolicy;
 import software.amazon.awscdk.services.iam.ManagedPolicy;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.iam.Role;
-import software.amazon.awscdk.services.iam.AccountPrincipal;
-import software.amazon.awscdk.services.iam.ArnPrincipal;
+import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Architecture;
 import software.amazon.awscdk.services.lambda.CfnEventSourceMapping;
 import software.amazon.awscdk.services.lambda.Code;
@@ -140,33 +139,21 @@ public class AppStack extends Stack {
                         "arn:aws:iam::" + this.getAccount() + ":role/cdk-*"))
                 .build();
 
-        // Add a trust policy statement to allow GitHub Actions to assume CDK roles
-        final PolicyStatement trustPolicy = PolicyStatement.Builder.create()
-                .effect(Effect.ALLOW)
-                .actions(Arrays.asList("sts:AssumeRole"))
-                .principals(Arrays.asList(
-                        new ArnPrincipal("arn:aws:iam::" + this.getAccount() + ":user/github-actions"),
-                        new ArnPrincipal("arn:aws:iam::" + this.getAccount() + ":role/GitHubActionsRole")))
-                .build();
-
-        // Create CDK roles with trust policy
+        // Create CDK roles with trust relationships
         final Role deployRole = Role.Builder.create(this, "CdkDeployRole")
                 .roleName("cdk-rrtb-deploy-role-" + this.getRegion())
-                .assumedBy(new AccountPrincipal(this.getAccount()))
+                .assumedBy(new ServicePrincipal("cloudformation.amazonaws.com"))
                 .build();
-        deployRole.addToPolicy(trustPolicy);
 
         final Role publishingRole = Role.Builder.create(this, "CdkPublishingRole")
                 .roleName("cdk-rrtb-file-publishing-role-" + this.getRegion())
-                .assumedBy(new AccountPrincipal(this.getAccount()))
+                .assumedBy(new ServicePrincipal("cloudformation.amazonaws.com"))
                 .build();
-        publishingRole.addToPolicy(trustPolicy);
 
         final Role lookupRole = Role.Builder.create(this, "CdkLookupRole")
                 .roleName("cdk-rrtb-lookup-role-" + this.getRegion())
-                .assumedBy(new AccountPrincipal(this.getAccount()))
+                .assumedBy(new ServicePrincipal("cloudformation.amazonaws.com"))
                 .build();
-        lookupRole.addToPolicy(trustPolicy);
 
         final ManagedPolicy githubActionsManagedPolicy = ManagedPolicy.Builder.create(this, "GitHubActionsPolicy")
                 .managedPolicyName("GitHubActionsPolicy")
