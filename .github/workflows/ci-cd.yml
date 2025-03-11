@@ -85,7 +85,10 @@ jobs:
           cdk bootstrap aws://$CDK_DEFAULT_ACCOUNT/$CDK_DEFAULT_REGION \
             --qualifier rrtb \
             --bootstrap-bucket-name cdk-rrtb-assets-$CDK_DEFAULT_ACCOUNT-$CDK_DEFAULT_REGION \
-            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess
+            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+            --trust $CDK_DEFAULT_ACCOUNT \
+            --no-bootstrap-customer-key \
+            --no-public-access-block-configuration
 
       - name: Deploy CDK app
         env:
