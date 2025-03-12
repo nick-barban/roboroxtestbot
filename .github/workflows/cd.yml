@@ -32,13 +32,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: master
 
       - name: Download Build Artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: CI
           workflow_conclusion: success
+          run_id: ${{ github.event.workflow_run.id }}
           name: build-artifacts
           path: .
 
@@ -90,13 +91,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: master
 
       - name: Download Build Artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: CI
           workflow_conclusion: success
+          run_id: ${{ github.event.workflow_run.id }}
           name: build-artifacts
           path: .
 
@@ -148,13 +150,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: master
 
       - name: Download Build Artifacts
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: CI
           workflow_conclusion: success
+          run_id: ${{ github.event.workflow_run.id }}
           name: build-artifacts
           path: .
 
