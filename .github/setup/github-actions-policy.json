@@ -24,6 +24,8 @@
                 "s3:DeleteBucket",
                 "s3:PutEncryptionConfiguration",
                 "s3:GetEncryptionConfiguration",
+                "s3:PutLifecycleConfiguration",
+                "s3:GetLifecycleConfiguration",
                 "cloudformation:CreateStack",
                 "cloudformation:DeleteStack",
                 "cloudformation:DescribeStacks",
