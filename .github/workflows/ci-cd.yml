@@ -75,14 +75,14 @@ jobs:
             --role-name github-actions-role \
             --policy-arn $POLICY_ARN
 
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
       - name: Bootstrap CDK
         run: |
           cd rrtb_infra
           npm install -g aws-cdk
           cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
-
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
 
       - name: Deploy with CDK
         run: |
