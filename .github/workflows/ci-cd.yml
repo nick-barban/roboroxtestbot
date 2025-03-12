@@ -67,11 +67,42 @@ jobs:
               --query 'Policy.Arn' --output text)
             echo "Created policy with ARN: $POLICY_ARN"
           else
-            echo "Policy already exists, updating it"
-            aws iam create-policy-version \
+            echo "Policy already exists, checking if update needed"
+            # Get current default version
+            DEFAULT_VERSION=$(aws iam get-policy --policy-arn $POLICY_ARN --query 'Policy.DefaultVersionId' --output text)
+            echo "Current default version: $DEFAULT_VERSION"
+            
+            # Get current policy document
+            CURRENT_POLICY=$(aws iam get-policy-version \
               --policy-arn $POLICY_ARN \
-              --policy-document file://.github/setup/github-actions-policy.json \
-              --set-as-default
+              --version-id $DEFAULT_VERSION \
+              --query 'PolicyVersion.Document' --output json)
+            
+            # Get new policy document
+            NEW_POLICY=$(cat .github/setup/github-actions-policy.json)
+            
+            # Compare policies (normalize JSON formatting)
+            if [ "$(echo $CURRENT_POLICY | jq -cS .)" != "$(echo $NEW_POLICY | jq -cS .)" ]; then
+              echo "Policy content has changed, creating new version"
+              # Get list of policy versions
+              VERSIONS=$(aws iam list-policy-versions --policy-arn $POLICY_ARN --query 'Versions[?!IsDefaultVersion].[VersionId]' --output text)
+              
+              # If we have any non-default versions, delete the oldest one
+              if [ ! -z "$VERSIONS" ]; then
+                OLDEST_VERSION=$(echo "$VERSIONS" | head -n 1)
+                echo "Deleting oldest version: $OLDEST_VERSION"
+                aws iam delete-policy-version --policy-arn $POLICY_ARN --version-id $OLDEST_VERSION
+              fi
+              
+              # Create new policy version
+              aws iam create-policy-version \
+                --policy-arn $POLICY_ARN \
+                --policy-document file://.github/setup/github-actions-policy.json \
+                --set-as-default
+              echo "Created new policy version"
+            else
+              echo "Policy content has not changed, skipping update"
+            fi
           fi
           
           # Attach the policy to the user
@@ -79,6 +110,9 @@ jobs:
           aws iam attach-user-policy \
             --user-name github-actions \
             --policy-arn $POLICY_ARN
+
+          echo "Current user policies after update:"
+          aws iam list-attached-user-policies --user-name github-actions
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml
