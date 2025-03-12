@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main", "RRTB-*" ]
+    branches: [ "master", "RRTB-*" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
     types:
       - opened
       - synchronize
