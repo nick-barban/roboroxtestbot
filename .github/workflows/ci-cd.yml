@@ -44,6 +44,7 @@ jobs:
           node-version: '18'
 
       - name: Configure AWS credentials
+        if: ${{ !env.ACT }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -129,6 +130,7 @@ jobs:
           cdk --version
 
       - name: Bootstrap CDK
+        if: ${{ !env.ACT }}
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
@@ -145,6 +147,7 @@ jobs:
           fi
 
       - name: Deploy with CDK
+        if: ${{ !env.ACT }}
         run: |
           cd rrtb_infra
           cdk deploy --require-approval never

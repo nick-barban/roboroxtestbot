@@ -9,29 +9,30 @@ log() {
 }
 
 # Check if act is installed
-if ! command -v act &> /dev/null; then
+if ! command -v act &> /dev/null
+then
     log "Error: 'act' is not installed. Please install it first:"
     log "brew install act"
     exit 1
-}
+fi
 
-# Check if required environment variables are set
-required_vars=("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_REGION" "AWS_ACCOUNT_ID")
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        log "Error: $var is not set"
-        exit 1
-    fi
-done
+# Check if Docker is running
+if ! docker info > /dev/null 2>&1
+then
+    log "Error: Docker is not running. Please start Docker first."
+    exit 1
+fi
 
 # Create test secrets file if it doesn't exist
-if [ ! -f ".secrets" ]; then
-    log "Creating .secrets file..."
-    cat > .secrets << EOF
-AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-AWS_REGION=${AWS_REGION}
-AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+if [ ! -f ".github/tests/test.secrets" ]
+then
+    log "Creating test secrets file..."
+    cat > .github/tests/test.secrets << EOF
+AWS_ACCESS_KEY_ID=test-key-id
+AWS_SECRET_ACCESS_KEY=test-secret-key
+AWS_REGION=us-east-1
+AWS_ACCOUNT_ID=123456789012
+ACT=true
 EOF
 fi
 
@@ -45,7 +46,8 @@ test_workflow() {
     log "Running test: $test_name"
     
     # Run the workflow with act
-    if act $event --secret-file .secrets "${extra_args[@]}" --workflows .github/workflows/ci-cd.yml; then
+    if act "$event" --container-architecture linux/amd64 --secret-file .github/tests/test.secrets --workflows .github/workflows/ci-cd.yml -e .github/tests/events/$event.json
+    then
         log "✅ Test passed: $test_name"
         return 0
     else
@@ -54,20 +56,59 @@ test_workflow() {
     fi
 }
 
+# Create test event files directory
+mkdir -p .github/tests/events
+
+# Create push event test file
+cat > .github/tests/events/push.json << EOF
+{
+  "ref": "refs/heads/RRTB-14",
+  "repository": {
+    "name": "roboroxtestbot",
+    "full_name": "nick-barban/roboroxtestbot"
+  }
+}
+EOF
+
+# Create pull request event test file
+cat > .github/tests/events/pull_request.json << EOF
+{
+  "pull_request": {
+    "head": {
+      "ref": "main"
+    }
+  },
+  "repository": {
+    "name": "roboroxtestbot",
+    "full_name": "nick-barban/roboroxtestbot"
+  }
+}
+EOF
+
+# Create workflow dispatch event test file
+cat > .github/tests/events/workflow_dispatch.json << EOF
+{
+  "repository": {
+    "name": "roboroxtestbot",
+    "full_name": "nick-barban/roboroxtestbot"
+  }
+}
+EOF
+
 # Run tests
 log "Starting workflow tests..."
 
 # Test 1: Basic push event
-test_workflow "Push event test" "push" --branch "RRTB-14"
+test_workflow "Push event test" "push"
 
 # Test 2: Pull request event
-test_workflow "Pull request event test" "pull_request" --branch "main"
+test_workflow "Pull request event test" "pull_request"
 
 # Test 3: Manual workflow dispatch
 test_workflow "Workflow dispatch test" "workflow_dispatch"
 
 # Cleanup
 log "Cleaning up..."
-rm -f .secrets
+rm -rf .github/tests/events
 
 log "All tests completed!" 
