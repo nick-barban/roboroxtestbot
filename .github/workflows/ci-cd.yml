@@ -53,6 +53,7 @@ jobs:
           mask-aws-account-id: true
 
       - name: Verify AWS Identity
+        if: ${{ !env.ACT }}
         run: |
           echo "Current AWS identity:"
           aws sts get-caller-identity
@@ -60,6 +61,7 @@ jobs:
           aws iam list-attached-user-policies --user-name github-actions
 
       - name: Create and Attach GitHub Actions Policy
+        if: ${{ !env.ACT }}
         env:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
