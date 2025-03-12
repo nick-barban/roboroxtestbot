@@ -49,8 +49,10 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install CDK
+      - name: Install CDK Dependencies
+        working-directory: rrtb_infra
         run: |
+          npm install
           npm install -g aws-cdk
           cdk --version
 
@@ -74,8 +76,9 @@ jobs:
         working-directory: rrtb_infra
         run: |
           cdk deploy --require-approval never --verbose
-          # Extract and set the application URL for environment URL
-          echo "app_url=https://your-app-dev-url.com" >> $GITHUB_OUTPUT
+          # Get the API Gateway URL from CloudFormation outputs
+          API_URL=$(aws cloudformation describe-stacks --stack-name RrtbAppStack --query 'Stacks[0].Outputs[?OutputKey==`RrtbApiUrl`].OutputValue' --output text)
+          echo "app_url=$API_URL" >> $GITHUB_OUTPUT
 
   deploy-test:
     needs: deploy-dev
@@ -108,8 +111,10 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install CDK
+      - name: Install CDK Dependencies
+        working-directory: rrtb_infra
         run: |
+          npm install
           npm install -g aws-cdk
           cdk --version
 
@@ -133,8 +138,9 @@ jobs:
         working-directory: rrtb_infra
         run: |
           cdk deploy --require-approval never --verbose
-          # Extract and set the application URL for environment URL
-          echo "app_url=https://your-app-test-url.com" >> $GITHUB_OUTPUT
+          # Get the API Gateway URL from CloudFormation outputs
+          API_URL=$(aws cloudformation describe-stacks --stack-name RrtbAppStack --query 'Stacks[0].Outputs[?OutputKey==`RrtbApiUrl`].OutputValue' --output text)
+          echo "app_url=$API_URL" >> $GITHUB_OUTPUT
 
   deploy-prod:
     needs: deploy-test
@@ -167,8 +173,10 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install CDK
+      - name: Install CDK Dependencies
+        working-directory: rrtb_infra
         run: |
+          npm install
           npm install -g aws-cdk
           cdk --version
 
@@ -192,5 +200,6 @@ jobs:
         working-directory: rrtb_infra
         run: |
           cdk deploy --require-approval never --verbose
-          # Extract and set the application URL for environment URL
-          echo "app_url=https://your-app-prod-url.com" >> $GITHUB_OUTPUT 
+          # Get the API Gateway URL from CloudFormation outputs
+          API_URL=$(aws cloudformation describe-stacks --stack-name RrtbAppStack --query 'Stacks[0].Outputs[?OutputKey==`RrtbApiUrl`].OutputValue' --output text)
+          echo "app_url=$API_URL" >> $GITHUB_OUTPUT 
