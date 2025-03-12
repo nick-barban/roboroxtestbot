@@ -1,0 +1,176 @@
+name: CD
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ "master" ]
+
+jobs:
+  prepare-deployment:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    steps:
+      - id: check
+        run: echo "should_deploy=true" >> $GITHUB_OUTPUT
+
+  deploy-dev:
+    needs: prepare-deployment
+    if: needs.prepare-deployment.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: ${{ steps.deploy.outputs.app_url }}
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install CDK
+        run: |
+          npm install -g aws-cdk
+          cdk --version
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_DEV }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Bootstrap CDK
+        working-directory: rrtb_infra
+        run: |
+          cdk bootstrap \
+            --verbose \
+            --qualifier rrtb-dev \
+            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+            aws://${{ secrets.AWS_ACCOUNT_ID_DEV }}/${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Dev
+        id: deploy
+        working-directory: rrtb_infra
+        run: |
+          cdk deploy --require-approval never --verbose
+          # Extract and set the application URL for environment URL
+          echo "app_url=https://your-app-dev-url.com" >> $GITHUB_OUTPUT
+
+  deploy-test:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: ${{ steps.deploy.outputs.app_url }}
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install CDK
+        run: |
+          npm install -g aws-cdk
+          cdk --version
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Bootstrap CDK
+        working-directory: rrtb_infra
+        run: |
+          cdk bootstrap \
+            --verbose \
+            --qualifier rrtb-test \
+            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+            aws://${{ secrets.AWS_ACCOUNT_ID_TEST }}/${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Test
+        id: deploy
+        working-directory: rrtb_infra
+        run: |
+          cdk deploy --require-approval never --verbose
+          # Extract and set the application URL for environment URL
+          echo "app_url=https://your-app-test-url.com" >> $GITHUB_OUTPUT
+
+  deploy-prod:
+    needs: deploy-test
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.app_url }}
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install CDK
+        run: |
+          npm install -g aws-cdk
+          cdk --version
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Bootstrap CDK
+        working-directory: rrtb_infra
+        run: |
+          cdk bootstrap \
+            --verbose \
+            --qualifier rrtb-prod \
+            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+            aws://${{ secrets.AWS_ACCOUNT_ID_PROD }}/${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Production
+        id: deploy
+        working-directory: rrtb_infra
+        run: |
+          cdk deploy --require-approval never --verbose
+          # Extract and set the application URL for environment URL
+          echo "app_url=https://your-app-prod-url.com" >> $GITHUB_OUTPUT 
