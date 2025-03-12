@@ -147,6 +147,7 @@ jobs:
           
           cdk bootstrap \
             --verbose \
+            --force \
             --qualifier rrtb \
             --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
             aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
