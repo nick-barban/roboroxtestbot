@@ -141,50 +141,54 @@ jobs:
           aws sts get-caller-identity
           echo "AWS Region: ${{ secrets.AWS_REGION }}"
           
-          echo "Checking CloudFormation stack drift..."
-          STACK_NAME="CDKToolkit"
-          echo "Initiating drift detection..."
-          DRIFT_ID=$(aws cloudformation detect-stack-drift --stack-name $STACK_NAME --query 'StackDriftDetectionId' --output text)
-          echo "Waiting for drift detection to complete..."
-          while true; do
-            STATUS=$(aws cloudformation describe-stack-drift-detection-status \
-              --stack-drift-detection-id $DRIFT_ID \
-              --query 'DetectionStatus' \
-              --output text)
-            echo "Drift detection status: $STATUS"
-            if [ "$STATUS" = "DETECTION_COMPLETE" ]; then
-              break
-            elif [ "$STATUS" = "DETECTION_FAILED" ]; then
-              echo "Drift detection failed"
-              exit 1
+          echo "Checking if CDKToolkit stack exists..."
+          if aws cloudformation describe-stacks --stack-name CDKToolkit >/dev/null 2>&1; then
+            echo "CDKToolkit stack exists, checking for drift..."
+            echo "Initiating drift detection..."
+            DRIFT_ID=$(aws cloudformation detect-stack-drift --stack-name CDKToolkit --query 'StackDriftDetectionId' --output text)
+            echo "Waiting for drift detection to complete..."
+            while true; do
+              STATUS=$(aws cloudformation describe-stack-drift-detection-status \
+                --stack-drift-detection-id $DRIFT_ID \
+                --query 'DetectionStatus' \
+                --output text)
+              echo "Drift detection status: $STATUS"
+              if [ "$STATUS" = "DETECTION_COMPLETE" ]; then
+                break
+              elif [ "$STATUS" = "DETECTION_FAILED" ]; then
+                echo "Drift detection failed"
+                exit 1
+              fi
+              sleep 5
+            done
+            
+            echo "Getting drift results..."
+            DRIFT_RESULTS=$(aws cloudformation describe-stack-resource-drifts --stack-name CDKToolkit)
+            echo "$DRIFT_RESULTS"
+            
+            # Check if StagingBucket is deleted
+            STAGING_BUCKET_STATUS=$(echo "$DRIFT_RESULTS" | jq -r '.StackResourceDrifts[] | select(.LogicalResourceId=="StagingBucket") | .StackResourceDriftStatus')
+            echo "StagingBucket status: $STAGING_BUCKET_STATUS"
+            
+            if [ "$STAGING_BUCKET_STATUS" = "DELETED" ]; then
+              echo "StagingBucket is deleted, forcing bootstrap..."
+              FORCE_FLAG="--force"
             fi
-            sleep 5
-          done
-          
-          echo "Getting drift results..."
-          DRIFT_RESULTS=$(aws cloudformation describe-stack-resource-drifts --stack-name $STACK_NAME)
-          echo "$DRIFT_RESULTS"
-          
-          # Check if StagingBucket is deleted
-          STAGING_BUCKET_STATUS=$(echo "$DRIFT_RESULTS" | jq -r '.StackResourceDrifts[] | select(.LogicalResourceId=="StagingBucket") | .StackResourceDriftStatus')
-          echo "StagingBucket status: $STAGING_BUCKET_STATUS"
-          
-          FORCE_FLAG=""
-          if [ "$STAGING_BUCKET_STATUS" = "DELETED" ]; then
-            echo "StagingBucket is deleted, forcing bootstrap..."
-            FORCE_FLAG="--force"
+          else
+            echo "CDKToolkit stack does not exist, will create from scratch..."
+            FORCE_FLAG=""
           fi
           
           echo "Running CDK bootstrap..."
           cdk bootstrap \
             --verbose \
-            $FORCE_FLAG \
+            ${FORCE_FLAG:-} \
             --qualifier rrtb \
             --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
             aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
           
           echo "Checking CloudFormation stacks..."
-          aws cloudformation describe-stacks --stack-name CDKToolkit || true
+          aws cloudformation describe-stacks --stack-name CDKToolkit
           
           echo "Verifying bootstrap bucket..."
           BUCKET_NAME="cdk-rrtb-assets-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }}"
