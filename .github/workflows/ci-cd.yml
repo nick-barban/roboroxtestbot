@@ -22,6 +22,9 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      id-token: write
+      contents: read
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -46,6 +49,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
+          mask-aws-account-id: true
 
       - name: Verify AWS Identity
         run: |
@@ -55,6 +59,8 @@ jobs:
           aws iam list-attached-user-policies --user-name github-actions
 
       - name: Create and Attach GitHub Actions Policy
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           # Create or update the policy
           POLICY_ARN=$(aws iam list-policies --query 'Policies[?PolicyName==`GitHubActionsPolicy`].Arn' --output text)
@@ -117,11 +123,26 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
+      - name: Install CDK
+        run: |
+          npm install -g aws-cdk
+          cdk --version
+
       - name: Bootstrap CDK
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           cd rrtb_infra
-          npm install -g aws-cdk
-          cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          # Check if bootstrap bucket exists
+          if ! aws s3api head-bucket --bucket cdk-rrtb-assets-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }} 2>/dev/null; then
+            echo "Bootstrap bucket does not exist. Running CDK bootstrap..."
+            cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} \
+              --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+              --trust ${{ secrets.AWS_ACCOUNT_ID }} \
+              --force
+          else
+            echo "Bootstrap bucket already exists"
+          fi
 
       - name: Deploy with CDK
         run: |
