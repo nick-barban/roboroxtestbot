@@ -162,11 +162,23 @@ jobs:
           done
           
           echo "Getting drift results..."
-          aws cloudformation describe-stack-resource-drifts --stack-name $STACK_NAME
+          DRIFT_RESULTS=$(aws cloudformation describe-stack-resource-drifts --stack-name $STACK_NAME)
+          echo "$DRIFT_RESULTS"
+          
+          # Check if StagingBucket is deleted
+          STAGING_BUCKET_STATUS=$(echo "$DRIFT_RESULTS" | jq -r '.StackResourceDrifts[] | select(.LogicalResourceId=="StagingBucket") | .StackResourceDriftStatus')
+          echo "StagingBucket status: $STAGING_BUCKET_STATUS"
+          
+          FORCE_FLAG=""
+          if [ "$STAGING_BUCKET_STATUS" = "DELETED" ]; then
+            echo "StagingBucket is deleted, forcing bootstrap..."
+            FORCE_FLAG="--force"
+          fi
           
           echo "Running CDK bootstrap..."
           cdk bootstrap \
             --verbose \
+            $FORCE_FLAG \
             --qualifier rrtb \
             --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
             aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
