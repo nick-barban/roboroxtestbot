@@ -47,15 +47,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Create GitHub Actions Role
+      - name: Verify AWS Identity
         run: |
-          # Create initial role with trust policy
-          if ! aws iam get-role --role-name github-actions-role 2>/dev/null; then
-            aws iam create-role \
-              --role-name github-actions-role \
-              --assume-role-policy-document file://.github/setup/github-actions-trust.json
-          fi
-          
+          echo "Current AWS identity:"
+          aws sts get-caller-identity
+          echo "Current user policies:"
+          aws iam list-attached-user-policies --user-name github-actions
+
+      - name: Create and Attach GitHub Actions Policy
+        run: |
           # Create or update the policy
           POLICY_ARN=$(aws iam list-policies --query 'Policies[?PolicyName==`GitHubActionsPolicy`].Arn' --output text)
           if [ -z "$POLICY_ARN" ]; then
@@ -70,9 +70,9 @@ jobs:
               --set-as-default
           fi
           
-          # Attach the policy to the role
-          aws iam attach-role-policy \
-            --role-name github-actions-role \
+          # Attach the policy to the user
+          aws iam attach-user-policy \
+            --user-name github-actions \
             --policy-arn $POLICY_ARN
 
       - name: Build with Maven
