@@ -22,6 +22,8 @@
                 "s3:GetBucketAcl",
                 "s3:PutBucketAcl",
                 "s3:DeleteBucket",
+                "s3:PutEncryptionConfiguration",
+                "s3:GetEncryptionConfiguration",
                 "cloudformation:CreateStack",
                 "cloudformation:DeleteStack",
                 "cloudformation:DescribeStacks",
@@ -34,6 +36,7 @@
                 "cloudformation:GetTemplateSummary",
                 "cloudformation:DescribeStackEvents",
                 "cloudformation:ValidateTemplate",
+                "cloudformation:GetTemplate",
                 "kms:Create*",
                 "kms:Describe*",
                 "kms:Enable*",
@@ -69,6 +72,7 @@
                 "arn:aws:s3:::cdk-*",
                 "arn:aws:s3:::cdk-*/*",
                 "arn:aws:cloudformation:*:*:stack/CDKToolkit/*",
+                "arn:aws:cloudformation:*:*:stack/CDK*/*",
                 "arn:aws:cloudformation:*:*:stack/*",
                 "arn:aws:kms:*:*:key/*",
                 "arn:aws:iam::*:role/*",
@@ -78,7 +82,9 @@
         {
             "Effect": "Allow",
             "Action": [
-                "ecr:GetAuthorizationToken"
+                "ecr:GetAuthorizationToken",
+                "cloudformation:ListStacks",
+                "s3:ListAllMyBuckets"
             ],
             "Resource": "*"
         }
