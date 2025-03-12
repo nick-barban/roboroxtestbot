@@ -1,0 +1,50 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr:SetRepositoryPolicy",
+                "ecr:GetRepositoryPolicy",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:PutImage",
+                "ecr:CreateRepository",
+                "ecr:DescribeRepositories",
+                "ecr:DeleteRepository",
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": [
+                "arn:aws:ecr:us-east-1:${YOUR_ACCOUNT_ID}:repository/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ssm:PutParameter",
+                "ssm:GetParameter",
+                "ssm:DeleteParameter"
+            ],
+            "Resource": [
+                "arn:aws:ssm:us-east-1:${YOUR_ACCOUNT_ID}:parameter/cdk-bootstrap/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:DeleteObject",
+                "s3:GetBucketLocation",
+                "s3:PutBucketPolicy"
+            ],
+            "Resource": [
+                "arn:aws:s3:::cdk-rrtb-assets-${YOUR_ACCOUNT_ID}-us-east-1",
+                "arn:aws:s3:::cdk-rrtb-assets-${YOUR_ACCOUNT_ID}-us-east-1/*"
+            ]
+        }
+    ]
+} 

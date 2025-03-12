@@ -1,0 +1,207 @@
+Resources:
+  FileAssetsBucketEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Statement:
+          - Action:
+              - kms:Create*
+              - kms:Describe*
+              - kms:Enable*
+              - kms:List*
+              - kms:Put*
+              - kms:Update*
+              - kms:Revoke*
+              - kms:Disable*
+              - kms:Get*
+              - kms:Delete*
+              - kms:ScheduleKeyDeletion
+              - kms:CancelKeyDeletion
+              - kms:GenerateDataKey
+              - kms:TagResource
+              - kms:UntagResource
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: "*"
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:CallerAccount:
+                  Ref: AWS::AccountId
+                kms:ViaService:
+                  Fn::Join:
+                    - "."
+                    - - s3
+                      - Ref: AWS::Region
+                      - Fn::Join:
+                          - ""
+                          - - amazonaws
+                            - Ref: AWS::URLSuffix
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: "*"
+        Version: "2012-10-17"
+      Description:
+        Fn::Join:
+          - ""
+          - - Key for encrypting S3 bucket
+            - Ref: AWS::StackName
+
+  # FileAssetsBucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName:
+  #       Fn::Join:
+  #         - "-"
+  #         - - cdk
+  #           - Ref: Qualifier
+  #           - assets
+  #           - Ref: AWS::AccountId
+  #           - Ref: AWS::Region
+  #     BucketEncryption:
+  #       ServerSideEncryptionConfiguration:
+  #         - ServerSideEncryptionByDefault:
+  #             SSEAlgorithm: aws:kms
+  #             KMSMasterKeyID:
+  #               Fn::GetAtt:
+  #                 - FileAssetsBucketEncryptionKey
+  #                 - Arn
+  #     PublicAccessBlockConfiguration:
+  #       BlockPublicAcls: true
+  #       BlockPublicPolicy: true
+  #       IgnorePublicAcls: true
+  #       RestrictPublicBuckets: true
+  #     VersioningConfiguration:
+  #       Status: Enabled
+
+  # FileAssetsBucketPolicy:
+  #   Type: AWS::S3::BucketPolicy
+  #   Properties:
+  #     Bucket:
+  #       Ref: FileAssetsBucket
+  #     PolicyDocument:
+  #       Statement:
+  #         - Action: s3:*
+  #           Effect: Deny
+  #           Principal: "*"
+  #           Resource:
+  #             - Fn::Join:
+  #                 - ""
+  #                 - - Fn::GetAtt:
+  #                       - FileAssetsBucket
+  #                       - Arn
+  #                   - /*
+  #             - Fn::GetAtt:
+  #                 - FileAssetsBucket
+  #                 - Arn
+  #           Condition:
+  #             Bool:
+  #               aws:SecureTransport: false
+  #       Version: "2012-10-17"
+
+  DeploymentActionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AdministratorAccess
+
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Name:
+        Fn::Join:
+          - ""
+          - - /cdk-bootstrap/
+            - Ref: Qualifier
+            - /version
+      Value: "1"
+
+Outputs:
+  BucketName:
+    Description: The name of the S3 bucket owned by the CDK toolkit stack
+    Value:
+      Fn::Join:
+        - "-"
+        - - cdk
+          - Ref: Qualifier
+          - assets
+          - Ref: AWS::AccountId
+          - Ref: AWS::Region
+  BucketDomainName:
+    Description: The domain name of the S3 bucket owned by the CDK toolkit stack
+    Value:
+      Fn::Join:
+        - "."
+        - - Fn::Join:
+            - "-"
+            - - cdk
+              - Ref: Qualifier
+              - assets
+              - Ref: AWS::AccountId
+              - Ref: AWS::Region
+          - s3
+          - Ref: AWS::Region
+          - Fn::Join:
+              - ""
+              - - amazonaws
+                - Ref: AWS::URLSuffix
+  FileAssetKeyArn:
+    Description: The ARN of the KMS key used to encrypt the asset bucket
+    Value:
+      Fn::GetAtt:
+        - FileAssetsBucketEncryptionKey
+        - Arn
+  BootstrapVersion:
+    Description: The version of the bootstrap resources that are currently mastered in this stack
+    Value:
+      Ref: BootstrapVersion
+
+Parameters:
+  Qualifier:
+    Type: String
+    Description: Qualifier for bootstrap resources
+    Default: hnb659fds 

@@ -180,6 +180,35 @@ public class AppStack extends Stack {
                 .build();
         final IManagedPolicy sqsCreateQueuePolicy = ManagedPolicy.fromAwsManagedPolicyName("AmazonSQSFullAccess");
         Objects.requireNonNull(rrtbInputLambda.getRole()).addManagedPolicy(sqsCreateQueuePolicy);
+        
+        // Add DynamoDB permissions
+        final PolicyStatement dynamoDbPolicy = PolicyStatement.Builder.create()
+                .effect(Effect.ALLOW)
+                .actions(Arrays.asList(
+                        "dynamodb:GetItem",
+                        "dynamodb:PutItem",
+                        "dynamodb:UpdateItem",
+                        "dynamodb:DeleteItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan",
+                        "dynamodb:BatchGetItem",
+                        "dynamodb:BatchWriteItem",
+                        "dynamodb:DescribeTable"))
+                .resources(Arrays.asList(
+                        userStateTable.getTableArn(),
+                        userStateTable.getTableArn() + "/index/*",
+                        userTable.getTableArn(),
+                        userTable.getTableArn() + "/index/*",
+                        groupTable.getTableArn(),
+                        groupTable.getTableArn() + "/index/*",
+                        schoolTable.getTableArn(),
+                        schoolTable.getTableArn() + "/index/*"))
+                .build();
+        rrtbInputLambda.getRole().attachInlinePolicy(
+            software.amazon.awscdk.services.iam.Policy.Builder.create(this, "RrtbInputLambdaDynamoDBPolicy")
+                .statements(List.of(dynamoDbPolicy))
+                .build()
+        );
 
         final FunctionUrl rrtbInputUrl = rrtbInputLambda.addFunctionUrl(FunctionUrlOptions.builder()
                 .authType(FunctionUrlAuthType.NONE)
@@ -206,6 +235,7 @@ public class AppStack extends Stack {
         final IManagedPolicy s3ReadOnlyPolicy = ManagedPolicy.fromAwsManagedPolicyName("AmazonS3ReadOnlyAccess");
         Objects.requireNonNull(rrtbDailyPostLambda.getRole()).addManagedPolicy(s3ReadOnlyPolicy);
         Objects.requireNonNull(rrtbDailyPostLambda.getRole()).addManagedPolicy(sqsCreateQueuePolicy);
+        rrtbDailyPostLambda.addToRolePolicy(dynamoDbPolicy);
         CfnOutput.Builder.create(this, "RrtbDailyPostLambda")
                 .exportName("RrtbDailyPostLambda")
                 .value(rrtbDailyPostLambda.getFunctionArn())
