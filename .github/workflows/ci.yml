@@ -25,17 +25,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Install CDK
-        run: |
-          npm install -g aws-cdk
-          cdk --version
-
       - name: Build with Maven
         run: mvn -B package --file pom.xml
 
@@ -44,14 +33,13 @@ jobs:
 
       - name: CDK Synth
         working-directory: rrtb_infra
-        run: |
-          cdk synth
+        run: mvn -B exec:java
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
-            target/*.jar
+            **/target/*.jar
             rrtb_infra/cdk.out
           retention-days: 7 
