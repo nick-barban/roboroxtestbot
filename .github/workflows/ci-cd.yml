@@ -137,19 +137,35 @@ jobs:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           cd rrtb_infra
-          # Check if bootstrap bucket exists
-          if ! aws s3api head-bucket --bucket cdk-rrtb-assets-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }} 2>/dev/null; then
-            echo "Bootstrap bucket does not exist. Running CDK bootstrap..."
-            cdk bootstrap aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }} \
-              --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-              --trust ${{ secrets.AWS_ACCOUNT_ID }} \
-              --force
+          echo "Checking AWS account and region..."
+          aws sts get-caller-identity
+          echo "AWS Region: ${{ secrets.AWS_REGION }}"
+          
+          echo "Installing CDK dependencies..."
+          npm install
+          
+          echo "Running CDK bootstrap..."
+          cdk bootstrap \
+            --verbose \
+            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
+            --trust ${{ secrets.AWS_ACCOUNT_ID }} \
+            --force \
+            aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          
+          echo "Verifying bootstrap bucket..."
+          BUCKET_NAME="cdk-rrtb-assets-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }}"
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            echo "✅ Bootstrap bucket $BUCKET_NAME exists"
+            aws s3api list-objects --bucket "$BUCKET_NAME" --max-items 5
           else
-            echo "Bootstrap bucket already exists"
+            echo "❌ Bootstrap bucket $BUCKET_NAME does not exist"
+            echo "Available S3 buckets:"
+            aws s3api list-buckets --query 'Buckets[].Name'
+            exit 1
           fi
 
       - name: Deploy with CDK
         if: ${{ !env.ACT }}
         run: |
           cd rrtb_infra
-          cdk deploy --require-approval never
+          cdk deploy --require-approval never --verbose
