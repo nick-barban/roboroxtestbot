@@ -141,9 +141,6 @@ jobs:
           aws sts get-caller-identity
           echo "AWS Region: ${{ secrets.AWS_REGION }}"
           
-          echo "Installing CDK dependencies..."
-          npm install
-          
           echo "Running CDK bootstrap..."
           cdk bootstrap \
             --verbose \
