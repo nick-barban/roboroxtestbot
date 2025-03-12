@@ -141,13 +141,32 @@ jobs:
           aws sts get-caller-identity
           echo "AWS Region: ${{ secrets.AWS_REGION }}"
           
-          echo "Running CDK bootstrap..."
-          echo "Current directory: $(pwd)"
-          ls -la
+          echo "Checking CloudFormation stack drift..."
+          STACK_NAME="CDKToolkit"
+          echo "Initiating drift detection..."
+          DRIFT_ID=$(aws cloudformation detect-stack-drift --stack-name $STACK_NAME --query 'StackDriftDetectionId' --output text)
+          echo "Waiting for drift detection to complete..."
+          while true; do
+            STATUS=$(aws cloudformation describe-stack-drift-detection-status \
+              --stack-drift-detection-id $DRIFT_ID \
+              --query 'DetectionStatus' \
+              --output text)
+            echo "Drift detection status: $STATUS"
+            if [ "$STATUS" = "DETECTION_COMPLETE" ]; then
+              break
+            elif [ "$STATUS" = "DETECTION_FAILED" ]; then
+              echo "Drift detection failed"
+              exit 1
+            fi
+            sleep 5
+          done
           
+          echo "Getting drift results..."
+          aws cloudformation describe-stack-resource-drifts --stack-name $STACK_NAME
+          
+          echo "Running CDK bootstrap..."
           cdk bootstrap \
             --verbose \
-            --force \
             --qualifier rrtb \
             --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
             aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
