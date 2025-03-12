@@ -58,12 +58,16 @@ jobs:
         run: |
           # Create or update the policy
           POLICY_ARN=$(aws iam list-policies --query 'Policies[?PolicyName==`GitHubActionsPolicy`].Arn' --output text)
+          echo "Policy ARN: $POLICY_ARN"
           if [ -z "$POLICY_ARN" ]; then
+            echo "Policy does not exist, creating it"
             POLICY_ARN=$(aws iam create-policy \
               --policy-name GitHubActionsPolicy \
               --policy-document file://.github/setup/github-actions-policy.json \
               --query 'Policy.Arn' --output text)
+            echo "Created policy with ARN: $POLICY_ARN"
           else
+            echo "Policy already exists, updating it"
             aws iam create-policy-version \
               --policy-arn $POLICY_ARN \
               --policy-document file://.github/setup/github-actions-policy.json \
@@ -71,6 +75,7 @@ jobs:
           fi
           
           # Attach the policy to the user
+          echo "Attaching policy to user"
           aws iam attach-user-policy \
             --user-name github-actions \
             --policy-arn $POLICY_ARN

@@ -4,17 +4,7 @@
         {
             "Effect": "Allow",
             "Action": [
-                "ecr:SetRepositoryPolicy",
-                "ecr:GetRepositoryPolicy",
-                "ecr:InitiateLayerUpload",
-                "ecr:UploadLayerPart",
-                "ecr:CompleteLayerUpload",
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:PutImage",
-                "ecr:CreateRepository",
-                "ecr:DescribeRepositories",
-                "ecr:DeleteRepository",
-                "ecr:GetAuthorizationToken",
+                "ecr:*",
                 "ssm:PutParameter",
                 "ssm:GetParameter",
                 "ssm:DeleteParameter",
@@ -84,6 +74,13 @@
                 "arn:aws:iam::*:role/*",
                 "arn:aws:iam::*:policy/*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
         }
     ]
 } 
