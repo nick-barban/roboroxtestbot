@@ -142,12 +142,17 @@ jobs:
           echo "AWS Region: ${{ secrets.AWS_REGION }}"
           
           echo "Running CDK bootstrap..."
+          echo "Current directory: $(pwd)"
+          ls -la
+          
           cdk bootstrap \
             --verbose \
+            --qualifier rrtb \
             --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-            --trust ${{ secrets.AWS_ACCOUNT_ID }} \
-            --force \
             aws://${{ secrets.AWS_ACCOUNT_ID }}/${{ secrets.AWS_REGION }}
+          
+          echo "Checking CloudFormation stacks..."
+          aws cloudformation describe-stacks --stack-name CDKToolkit || true
           
           echo "Verifying bootstrap bucket..."
           BUCKET_NAME="cdk-rrtb-assets-${{ secrets.AWS_ACCOUNT_ID }}-${{ secrets.AWS_REGION }}"
