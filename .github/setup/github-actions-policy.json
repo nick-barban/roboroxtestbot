@@ -74,15 +74,15 @@
                 "sts:AssumeRole"
             ],
             "Resource": [
-                "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*",
-                "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/*",
+                "arn:aws:ecr:*:*:repository/*",
+                "arn:aws:ssm:*:*:parameter/*",
                 "arn:aws:s3:::cdk-*",
                 "arn:aws:s3:::cdk-*/*",
-                "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CDKToolkit/*",
-                "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*",
-                "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/*",
-                "arn:aws:iam::${AWS::AccountId}:role/*",
-                "arn:aws:iam::${AWS::AccountId}:policy/*"
+                "arn:aws:cloudformation:*:*:stack/CDKToolkit/*",
+                "arn:aws:cloudformation:*:*:stack/*",
+                "arn:aws:kms:*:*:key/*",
+                "arn:aws:iam::*:role/*",
+                "arn:aws:iam::*:policy/*"
             ]
         }
     ]
