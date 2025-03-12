@@ -156,8 +156,7 @@ jobs:
             aws s3api list-objects --bucket "$BUCKET_NAME" --max-items 5
           else
             echo "❌ Bootstrap bucket $BUCKET_NAME does not exist"
-            echo "Available S3 buckets:"
-            aws s3api list-buckets --query 'Buckets[].Name'
+            echo "CDK bootstrap may have failed to create the bucket. Please check CloudFormation console for more details."
             exit 1
           fi
 
