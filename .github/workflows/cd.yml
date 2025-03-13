@@ -5,225 +5,118 @@ on:
     workflows: ["CI"]
     types:
       - completed
-    branches: ["master"]
+    branches:
+      - master
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 jobs:
   prepare-deployment:
-    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    outputs:
-      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - id: check
-        run: echo "should_deploy=true" >> $GITHUB_OUTPUT
-
-  deploy-dev:
-    needs: prepare-deployment
-    if: needs.prepare-deployment.outputs.should_deploy == 'true'
-    runs-on: ubuntu-latest
-    environment:
-      name: development
-      url: ${{ steps.deploy.outputs.app_url }}
-    
-    permissions:
-      id-token: write
-      contents: read
-    
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: master
-
-      - name: Download Build Artifacts
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: build-artifacts
-          path: .
+          name: rrtb-artifact
+          path: rrtb-artifact
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
 
-      - name: List directory contents
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "\nDirectory contents:"
-          ls -la
-          echo "\nrrtb_infra contents:"
-          ls -la rrtb_infra || echo "rrtb_infra directory not found"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+  deploy-dev:
+    needs: prepare-deployment
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '18'
-
+          node-version: '20'
+          cache: 'npm'
       - name: Install CDK Dependencies
-        working-directory: rrtb_infra
         run: |
-          npm init -y
-          npm install aws-cdk-lib constructs
-          npm install -g aws-cdk
-          cdk --version
-
+          cd rrtb_infra
+          npm install
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_DEV }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Update Policy Files
+        run: |
+          cd rrtb_infra
+          sed -i "s/\${AWS_ACCOUNT_ID}/${{ env.AWS_ACCOUNT_ID }}/g" github-actions-policy.json
       - name: Bootstrap CDK
-        working-directory: rrtb_infra
         run: |
-          cdk bootstrap \
-            --verbose \
-            --qualifier rrtb-dev \
-            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-            aws://${{ secrets.AWS_ACCOUNT_ID_DEV }}/${{ secrets.AWS_REGION }}
-
-      - name: Deploy to Dev
-        id: deploy
-        working-directory: rrtb_infra
+          cd rrtb_infra
+          npx cdk bootstrap
+      - name: Deploy Application
         run: |
-          cdk deploy --require-approval never --verbose
-          # Get the API Gateway URL from CloudFormation outputs
-          API_URL=$(aws cloudformation describe-stacks --stack-name RrtbAppStack --query 'Stacks[0].Outputs[?OutputKey==`RrtbApiUrl`].OutputValue' --output text)
-          echo "app_url=$API_URL" >> $GITHUB_OUTPUT
+          cd rrtb_infra
+          npx cdk deploy --require-approval never
 
   deploy-test:
     needs: deploy-dev
     runs-on: ubuntu-latest
-    environment:
-      name: test
-      url: ${{ steps.deploy.outputs.app_url }}
-    
-    permissions:
-      id-token: write
-      contents: read
-    
+    environment: test
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          ref: master
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: .
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
-
-      - name: List directory contents
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "\nDirectory contents:"
-          ls -la
-          echo "\nrrtb_infra contents:"
-          ls -la rrtb_infra || echo "rrtb_infra directory not found"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
+          node-version: '20'
+          cache: 'npm'
       - name: Install CDK Dependencies
-        working-directory: rrtb_infra
         run: |
-          npm init -y
-          npm install aws-cdk-lib constructs
-          npm install -g aws-cdk
-          cdk --version
-
+          cd rrtb_infra
+          npm install
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Update Policy Files
+        run: |
+          cd rrtb_infra
+          sed -i "s/\${AWS_ACCOUNT_ID}/${{ env.AWS_ACCOUNT_ID }}/g" github-actions-policy.json
       - name: Bootstrap CDK
-        working-directory: rrtb_infra
         run: |
-          cdk bootstrap \
-            --verbose \
-            --qualifier rrtb-test \
-            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-            aws://${{ secrets.AWS_ACCOUNT_ID_TEST }}/${{ secrets.AWS_REGION }}
-
-      - name: Deploy to Test
-        id: deploy
-        working-directory: rrtb_infra
+          cd rrtb_infra
+          npx cdk bootstrap
+      - name: Deploy Application
         run: |
-          cdk deploy --require-approval never --verbose
-          # Get the API Gateway URL from CloudFormation outputs
-          API_URL=$(aws cloudformation describe-stacks --stack-name RrtbAppStack --query 'Stacks[0].Outputs[?OutputKey==`RrtbApiUrl`].OutputValue' --output text)
-          echo "app_url=$API_URL" >> $GITHUB_OUTPUT
+          cd rrtb_infra
+          npx cdk deploy --require-approval never
 
   deploy-prod:
     needs: deploy-test
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ steps.deploy.outputs.app_url }}
-    
-    permissions:
-      id-token: write
-      contents: read
-    
+    environment: production
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          ref: master
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: .
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.workflow_run.id }}
-
-      - name: List directory contents
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "\nDirectory contents:"
-          ls -la
-          echo "\nrrtb_infra contents:"
-          ls -la rrtb_infra || echo "rrtb_infra directory not found"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
+          node-version: '20'
+          cache: 'npm'
       - name: Install CDK Dependencies
-        working-directory: rrtb_infra
         run: |
-          npm init -y
-          npm install aws-cdk-lib constructs
-          npm install -g aws-cdk
-          cdk --version
-
+          cd rrtb_infra
+          npm install
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Update Policy Files
+        run: |
+          cd rrtb_infra
+          sed -i "s/\${AWS_ACCOUNT_ID}/${{ env.AWS_ACCOUNT_ID }}/g" github-actions-policy.json
       - name: Bootstrap CDK
-        working-directory: rrtb_infra
         run: |
-          cdk bootstrap \
-            --verbose \
-            --qualifier rrtb-prod \
-            --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess \
-            aws://${{ secrets.AWS_ACCOUNT_ID_PROD }}/${{ secrets.AWS_REGION }}
-
-      - name: Deploy to Production
-        id: deploy
-        working-directory: rrtb_infra
+          cd rrtb_infra
+          npx cdk bootstrap
+      - name: Deploy Application
         run: |
-          cdk deploy --require-approval never --verbose
-          # Get the API Gateway URL from CloudFormation outputs
-          API_URL=$(aws cloudformation describe-stacks --stack-name RrtbAppStack --query 'Stacks[0].Outputs[?OutputKey==`RrtbApiUrl`].OutputValue' --output text)
-          echo "app_url=$API_URL" >> $GITHUB_OUTPUT 
+          cd rrtb_infra
+          npx cdk deploy --require-approval never 
