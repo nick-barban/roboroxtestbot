@@ -1,0 +1,16 @@
+{
+  "name": "rrtb_infra",
+  "version": "1.0.0",
+  "description": "Infrastructure for RoboRox Test Bot",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.0.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.0.0"
+  }
+} 
