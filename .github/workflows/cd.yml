@@ -47,6 +47,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: rrtb_infra/package-lock.json
 
       - name: Install CDK Dependencies
         working-directory: rrtb_infra
@@ -108,6 +109,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: rrtb_infra/package-lock.json
 
       - name: Install CDK Dependencies
         working-directory: rrtb_infra
@@ -169,6 +171,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: rrtb_infra/package-lock.json
 
       - name: Install CDK Dependencies
         working-directory: rrtb_infra
