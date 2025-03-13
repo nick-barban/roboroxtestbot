@@ -42,6 +42,15 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
 
+      - name: List directory contents
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "\nDirectory contents:"
+          ls -la
+          echo "\nrrtb_infra contents:"
+          ls -la rrtb_infra || echo "rrtb_infra directory not found"
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -104,6 +113,15 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
 
+      - name: List directory contents
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "\nDirectory contents:"
+          ls -la
+          echo "\nrrtb_infra contents:"
+          ls -la rrtb_infra || echo "rrtb_infra directory not found"
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -165,6 +183,15 @@ jobs:
           path: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
+
+      - name: List directory contents
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "\nDirectory contents:"
+          ls -la
+          echo "\nrrtb_infra contents:"
+          ls -la rrtb_infra || echo "rrtb_infra directory not found"
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
