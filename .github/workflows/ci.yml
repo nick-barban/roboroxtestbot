@@ -42,4 +42,6 @@ jobs:
           path: |
             **/target/*.jar
             rrtb_infra/cdk.out
+            rrtb_infra/package.json
+            rrtb_infra/package-lock.json
           retention-days: 7 
