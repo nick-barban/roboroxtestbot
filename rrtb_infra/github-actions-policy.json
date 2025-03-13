@@ -45,6 +45,19 @@
                 "arn:aws:s3:::cdk-rrtb-assets-${YOUR_ACCOUNT_ID}-us-east-1",
                 "arn:aws:s3:::cdk-rrtb-assets-${YOUR_ACCOUNT_ID}-us-east-1/*"
             ]
+        },
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/token.actions.githubusercontent.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                    "token.actions.githubusercontent.com:sub": "repo:nick-barban/roboroxtestbot:ref:refs/heads/master"
+                }
+            }
         }
     ]
 } 
