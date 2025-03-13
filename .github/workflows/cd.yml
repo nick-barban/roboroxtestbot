@@ -55,13 +55,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: rrtb_infra/package-lock.json
 
       - name: Install CDK Dependencies
         working-directory: rrtb_infra
         run: |
-          npm install
+          npm init -y
+          npm install aws-cdk-lib constructs
           npm install -g aws-cdk
           cdk --version
 
@@ -126,13 +125,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: rrtb_infra/package-lock.json
 
       - name: Install CDK Dependencies
         working-directory: rrtb_infra
         run: |
-          npm install
+          npm init -y
+          npm install aws-cdk-lib constructs
           npm install -g aws-cdk
           cdk --version
 
@@ -197,13 +195,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: rrtb_infra/package-lock.json
 
       - name: Install CDK Dependencies
         working-directory: rrtb_infra
         run: |
-          npm install
+          npm init -y
+          npm install aws-cdk-lib constructs
           npm install -g aws-cdk
           cdk --version
 
