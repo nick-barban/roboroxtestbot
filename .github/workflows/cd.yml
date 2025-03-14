@@ -8,6 +8,10 @@ on:
     branches:
       - master
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -43,6 +47,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_DEV }}
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-${{ github.run_id }}
       - name: Update Policy Files
         run: |
           cd rrtb_infra
@@ -74,6 +79,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TEST }}
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-${{ github.run_id }}
       - name: Update Policy Files
         run: |
           cd rrtb_infra
@@ -105,6 +111,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
           aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-${{ github.run_id }}
       - name: Update Policy Files
         run: |
           cd rrtb_infra
