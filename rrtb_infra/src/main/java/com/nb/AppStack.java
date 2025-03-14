@@ -204,11 +204,7 @@ public class AppStack extends Stack {
                         schoolTable.getTableArn(),
                         schoolTable.getTableArn() + "/index/*"))
                 .build();
-        rrtbInputLambda.getRole().attachInlinePolicy(
-            software.amazon.awscdk.services.iam.Policy.Builder.create(this, "RrtbInputLambdaDynamoDBPolicy")
-                .statements(List.of(dynamoDbPolicy))
-                .build()
-        );
+        rrtbInputLambda.addToRolePolicy(dynamoDbPolicy);
 
         final FunctionUrl rrtbInputUrl = rrtbInputLambda.addFunctionUrl(FunctionUrlOptions.builder()
                 .authType(FunctionUrlAuthType.NONE)
