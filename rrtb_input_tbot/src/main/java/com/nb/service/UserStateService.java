@@ -23,7 +23,7 @@ public class UserStateService {
     public static final String STATE = "state";
     public static final String TTL = "ttl";
     private final DynamoDbClient dynamoDbClient;
-    private static final String TABLE_NAME = "UserStateTable";
+    private static final String TABLE_NAME = "UserState";
     private static final long STATE_EXPIRY_HOURS = 24;
 
     public UserStateService(DynamoDbClient dynamoDbClient) {
