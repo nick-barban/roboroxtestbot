@@ -21,6 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
+      - uses: actions/checkout@v4
+      
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
@@ -28,6 +30,19 @@ jobs:
           path: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
+      
+      - name: Display structure of downloaded files
+        run: ls -R
+        
+      - name: Upload artifacts for next jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-artifacts
+          path: |
+            **/target/*.jar
+            rrtb_infra/cdk.out
+            rrtb_infra/package.json
+            rrtb_infra/package-lock.json
 
   deploy-dev:
     needs: prepare-deployment
@@ -35,28 +50,39 @@ jobs:
     environment: development
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Download deployment artifacts  
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-artifacts
+          path: .
+          
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          
       - name: Install CDK Dependencies
         run: |
           cd rrtb_infra
           npm install
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GitHubActions-${{ github.run_id }}
+          
       - name: Update Policy Files
         run: |
           cd rrtb_infra
           sed -i "s/\${AWS_ACCOUNT_ID}/${{ env.AWS_ACCOUNT_ID }}/g" github-actions-policy.json
+          
       - name: Bootstrap CDK
         run: |
           cd rrtb_infra
           npx cdk bootstrap
+          
       - name: Deploy Application
         run: |
           cd rrtb_infra
@@ -68,28 +94,39 @@ jobs:
     environment: test
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Download deployment artifacts  
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-artifacts
+          path: .
+          
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          
       - name: Install CDK Dependencies
         run: |
           cd rrtb_infra
           npm install
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GitHubActions-${{ github.run_id }}
+          
       - name: Update Policy Files
         run: |
           cd rrtb_infra
           sed -i "s/\${AWS_ACCOUNT_ID}/${{ env.AWS_ACCOUNT_ID }}/g" github-actions-policy.json
+          
       - name: Bootstrap CDK
         run: |
           cd rrtb_infra
           npx cdk bootstrap
+          
       - name: Deploy Application
         run: |
           cd rrtb_infra
@@ -101,28 +138,39 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Download deployment artifacts  
+        uses: actions/download-artifact@v4
+        with:
+          name: deployment-artifacts
+          path: .
+          
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          
       - name: Install CDK Dependencies
         run: |
           cd rrtb_infra
           npm install
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-          role-session-name: GitHubActions-${{ github.run_id }}
+          
       - name: Update Policy Files
         run: |
           cd rrtb_infra
           sed -i "s/\${AWS_ACCOUNT_ID}/${{ env.AWS_ACCOUNT_ID }}/g" github-actions-policy.json
+          
       - name: Bootstrap CDK
         run: |
           cd rrtb_infra
           npx cdk bootstrap
+          
       - name: Deploy Application
         run: |
           cd rrtb_infra
