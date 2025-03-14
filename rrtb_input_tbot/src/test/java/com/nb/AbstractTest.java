@@ -31,7 +31,7 @@ public abstract class AbstractTest implements TestPropertyProvider {
             .withServices(LocalStackContainer.Service.SQS, LocalStackContainer.Service.DYNAMODB);
     public static final String GIVEN_TEST_INPUT_FIFO_QUEUE_NAME = "test_input.fifo";
     public static final String GIVEN_TEST_OUTPUT_FIFO_QUEUE_NAME = "test_output.fifo";
-    public static final String USER_STATE_TABLE_NAME = "UserStateTable";
+    public static final String USER_STATE_TABLE_NAME = "UserState";
     public static final String GROUP_TABLE_NAME = "GroupTable";
 
     @Inject
