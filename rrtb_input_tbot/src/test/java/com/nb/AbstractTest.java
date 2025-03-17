@@ -33,6 +33,7 @@ public abstract class AbstractTest implements TestPropertyProvider {
     public static final String GIVEN_TEST_OUTPUT_FIFO_QUEUE_NAME = "test_output.fifo";
     public static final String USER_STATE_TABLE_NAME = "UserState";
     public static final String GROUP_TABLE_NAME = "GroupTable";
+    public static final String SCHOOL_TABLE_NAME = "School";
 
     @Inject
     protected JsonMapper jsonMapper;
@@ -80,10 +81,26 @@ public abstract class AbstractTest implements TestPropertyProvider {
                     .writeCapacityUnits(5L)
                     .build())
                 .build();
+                
+        // Create SchoolTable
+        CreateTableRequest schoolTableRequest = CreateTableRequest.builder()
+                .tableName(SCHOOL_TABLE_NAME)
+                .keySchema(
+                    KeySchemaElement.builder().attributeName("schoolId").keyType(KeyType.HASH).build()
+                )
+                .attributeDefinitions(
+                    AttributeDefinition.builder().attributeName("schoolId").attributeType(ScalarAttributeType.S).build()
+                )
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                    .readCapacityUnits(5L)
+                    .writeCapacityUnits(5L)
+                    .build())
+                .build();
 
         try {
             dynamoDbClient.createTable(userStateTableRequest);
             dynamoDbClient.createTable(groupTableRequest);
+            dynamoDbClient.createTable(schoolTableRequest);
         } catch (ResourceInUseException e) {
             // Tables already exist, ignore
         }
