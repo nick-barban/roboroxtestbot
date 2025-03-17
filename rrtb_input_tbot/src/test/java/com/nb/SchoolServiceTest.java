@@ -46,6 +46,77 @@ class SchoolServiceTest extends AbstractTest {
     }
     
     @Test
+    void testAddSchoolFromLines() {
+        // Given
+        String[] lines = {
+            "#addschool",
+            "schoolName: Test School From Lines",
+            "description: Test Description From Lines",
+            "location: Test Location From Lines",
+            "telegramGroup: @testlinesgroup"
+        };
+        
+        // When
+        String schoolId = schoolService.addSchool(lines);
+        
+        // Then
+        assertNotNull(schoolId);
+        
+        // Verify the school was added correctly
+        Optional<Map<String, String>> result = schoolService.getSchool(schoolId);
+        assertTrue(result.isPresent());
+        
+        Map<String, String> school = result.get();
+        assertEquals(schoolId, school.get("schoolId"));
+        assertEquals("Test School From Lines", school.get("schoolName"));
+        assertEquals("Test Description From Lines", school.get("description"));
+        assertEquals("Test Location From Lines", school.get("location"));
+        assertEquals("@testlinesgroup", school.get("telegramGroup"));
+    }
+    
+    @Test
+    void testAddSchoolFromLinesMinimalData() {
+        // Given
+        String[] lines = {
+            "#addschool",
+            "schoolName: Minimal School"
+        };
+        
+        // When
+        String schoolId = schoolService.addSchool(lines);
+        
+        // Then
+        assertNotNull(schoolId);
+        
+        // Verify the school was added with minimal data
+        Optional<Map<String, String>> result = schoolService.getSchool(schoolId);
+        assertTrue(result.isPresent());
+        
+        Map<String, String> school = result.get();
+        assertEquals(schoolId, school.get("schoolId"));
+        assertEquals("Minimal School", school.get("schoolName"));
+        assertFalse(school.containsKey("description"));
+        assertFalse(school.containsKey("location"));
+        assertFalse(school.containsKey("telegramGroup"));
+    }
+    
+    @Test
+    void testAddSchoolFromLinesMissingName() {
+        // Given
+        String[] lines = {
+            "#addschool",
+            "description: Description Without Name"
+        };
+        
+        // When/Then
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            schoolService.addSchool(lines);
+        });
+        
+        assertEquals("School name is required", exception.getMessage());
+    }
+    
+    @Test
     void testAddSchool() {
         // Given
         String schoolId = UUID.randomUUID().toString();
