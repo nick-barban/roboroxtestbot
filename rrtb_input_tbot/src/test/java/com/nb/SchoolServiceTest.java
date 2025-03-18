@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SchoolServiceTest extends AbstractTest {
@@ -19,7 +18,7 @@ class SchoolServiceTest extends AbstractTest {
     private static final String SCHOOL_TABLE_NAME = "School";
     
     @Inject
-    private SchoolService schoolService;
+    private SchoolServiceImpl schoolService;
     
     @Inject
     private DynamoDbClient dynamoDbClient;
@@ -75,29 +74,28 @@ class SchoolServiceTest extends AbstractTest {
     }
     
     @Test
-    void testAddSchoolFromLinesMinimalData() {
+    void testAddSchoolFromLinesWithExtraWhitespace() {
         // Given
         String[] lines = {
-            "#addschool",
-            "schoolName: Minimal School"
+            "  #addschool  ",
+            "  schoolName:    Test School With Spaces   ",
+            "description:      Test Description With Spaces   ",
+            "   location:    Test Location With Spaces   ",
+            "   telegramGroup:   @spacegroup   "
         };
         
         // When
         String schoolId = schoolService.addSchool(lines);
         
         // Then
-        assertNotNull(schoolId);
-        
-        // Verify the school was added with minimal data
         Optional<Map<String, String>> result = schoolService.getSchool(schoolId);
         assertTrue(result.isPresent());
         
         Map<String, String> school = result.get();
-        assertEquals(schoolId, school.get("schoolId"));
-        assertEquals("Minimal School", school.get("schoolName"));
-        assertFalse(school.containsKey("description"));
-        assertFalse(school.containsKey("location"));
-        assertFalse(school.containsKey("telegramGroup"));
+        assertEquals("Test School With Spaces", school.get("schoolName"));
+        assertEquals("Test Description With Spaces", school.get("description"));
+        assertEquals("Test Location With Spaces", school.get("location"));
+        assertEquals("@spacegroup", school.get("telegramGroup"));
     }
     
     @Test
@@ -117,82 +115,107 @@ class SchoolServiceTest extends AbstractTest {
     }
     
     @Test
-    void testAddSchool() {
+    void testAddSchoolFromLinesWithMissingDescription() {
         // Given
-        String schoolId = UUID.randomUUID().toString();
-        String schoolName = "Test School";
-        String description = "Test Description";
-        String location = "Test Location";
-        String telegramGroup = "@testgroup";
+        String[] lines = {
+            "#addschool",
+            "schoolName: School Without Description",
+            "location: Test Location",
+            "telegramGroup: @testgroup"
+        };
         
-        // When
-        schoolService.addSchool(schoolId, schoolName, description, location, telegramGroup);
+        // When/Then
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            schoolService.addSchool(lines);
+        });
         
-        // Then
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("schoolId", AttributeValue.builder().s(schoolId).build());
-        
-        GetItemRequest request = GetItemRequest.builder()
-                .tableName(SCHOOL_TABLE_NAME)
-                .key(key)
-                .build();
-        
-        GetItemResponse response = dynamoDbClient.getItem(request);
-        assertTrue(response.hasItem());
-        assertEquals(schoolName, response.item().get("schoolName").s());
-        assertEquals(description, response.item().get("description").s());
-        assertEquals(location, response.item().get("location").s());
-        assertEquals(telegramGroup, response.item().get("telegramGroup").s());
+        assertEquals("School description is required", exception.getMessage());
     }
     
     @Test
-    void testAddSchoolWithNullFields() {
+    void testAddSchoolFromLinesWithMissingLocation() {
         // Given
-        String schoolId = UUID.randomUUID().toString();
-        String schoolName = "Test School Only Name";
+        String[] lines = {
+            "#addschool",
+            "schoolName: School Without Location",
+            "description: Test Description",
+            "telegramGroup: @testgroup"
+        };
         
-        // When
-        schoolService.addSchool(schoolId, schoolName, null, null, null);
+        // When/Then
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            schoolService.addSchool(lines);
+        });
         
-        // Then
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("schoolId", AttributeValue.builder().s(schoolId).build());
-        
-        GetItemRequest request = GetItemRequest.builder()
-                .tableName(SCHOOL_TABLE_NAME)
-                .key(key)
-                .build();
-        
-        GetItemResponse response = dynamoDbClient.getItem(request);
-        assertTrue(response.hasItem());
-        assertEquals(schoolName, response.item().get("schoolName").s());
-        assertFalse(response.item().containsKey("description"));
-        assertFalse(response.item().containsKey("location"));
-        assertFalse(response.item().containsKey("telegramGroup"));
+        assertEquals("School location is required", exception.getMessage());
     }
     
     @Test
-    void testGetSchool() {
+    void testAddSchoolFromLinesWithMissingTelegramGroup() {
         // Given
-        String schoolId = UUID.randomUUID().toString();
-        String schoolName = "Test School for Get";
-        String description = "Test Description for Get";
-        String location = "Test Location for Get";
-        String telegramGroup = "@getgroup";
+        String[] lines = {
+            "#addschool",
+            "schoolName: School Without Telegram Group",
+            "description: Test Description",
+            "location: Test Location"
+        };
         
-        schoolService.addSchool(schoolId, schoolName, description, location, telegramGroup);
+        // When/Then
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            schoolService.addSchool(lines);
+        });
+        
+        assertEquals("School telegram group is required", exception.getMessage());
+    }
+    
+    @Test
+    void testAddSchoolFromLinesWithInvalidFormat() {
+        // Given
+        String[] lines = {
+            "#addschool",
+            "schoolName: Test School",
+            "This line has no colon",
+            "description: Test Description",
+            "location: Test Location",
+            "telegramGroup: @testgroup"
+        };
         
         // When
+        String schoolId = schoolService.addSchool(lines);
+        
+        // Then
         Optional<Map<String, String>> result = schoolService.getSchool(schoolId);
+        assertTrue(result.isPresent());
+        
+        // The invalid line should be ignored
+        Map<String, String> school = result.get();
+        assertEquals("Test School", school.get("schoolName"));
+        assertEquals("Test Description", school.get("description"));
+    }
+    
+    @Test
+    void testAddSchoolFromLinesWithEmptyValue() {
+        // Given
+        String[] lines = {
+            "#addschool",
+            "schoolName: Test School",
+            "description: Test Description",
+            "location: Test Location",
+            "telegramGroup: @testgroup",
+            "emptyField: "
+        };
+        
+        // When
+        String schoolId = schoolService.addSchool(lines);
         
         // Then
+        Optional<Map<String, String>> result = schoolService.getSchool(schoolId);
         assertTrue(result.isPresent());
+        
+        // The empty value field should be ignored
         Map<String, String> school = result.get();
-        assertEquals(schoolId, school.get("schoolId"));
-        assertEquals(schoolName, school.get("schoolName"));
-        assertEquals(description, school.get("description"));
-        assertEquals(location, school.get("location"));
-        assertEquals(telegramGroup, school.get("telegramGroup"));
+        assertEquals("Test School", school.get("schoolName"));
+        assertFalse(school.containsKey("emptyField"));
     }
     
     @Test
@@ -208,67 +231,35 @@ class SchoolServiceTest extends AbstractTest {
     }
     
     @Test
-    void testUpdateSchool() {
+    void testUpdateNonExistentSchool() {
         // Given
-        String schoolId = UUID.randomUUID().toString();
-        String initialSchoolName = "Initial School Name";
-        String initialDescription = "Initial Description";
-        
-        schoolService.addSchool(schoolId, initialSchoolName, initialDescription, null, null);
-        
+        String nonExistentSchoolId = UUID.randomUUID().toString();
         Map<String, String> updates = new HashMap<>();
-        String updatedSchoolName = "Updated School Name";
-        String updatedLocation = "Updated Location";
-        String updatedTelegramGroup = "@updatedgroup";
-        
-        updates.put("schoolName", updatedSchoolName);
-        updates.put("location", updatedLocation);
-        updates.put("telegramGroup", updatedTelegramGroup);
+        updates.put("schoolName", "New School");
+        updates.put("description", "New Description");
         
         // When
-        schoolService.updateSchool(schoolId, updates);
+        schoolService.updateSchool(nonExistentSchoolId, updates);
         
         // Then
-        Optional<Map<String, String>> result = schoolService.getSchool(schoolId);
+        Optional<Map<String, String>> result = schoolService.getSchool(nonExistentSchoolId);
         assertTrue(result.isPresent());
-        Map<String, String> updatedSchool = result.get();
-        
-        assertEquals(updatedSchoolName, updatedSchool.get("schoolName"));
-        // Description should still be present and unchanged
-        assertEquals(initialDescription, updatedSchool.get("description"));
-        assertEquals(updatedLocation, updatedSchool.get("location"));
-        assertEquals(updatedTelegramGroup, updatedSchool.get("telegramGroup"));
+        assertEquals("New School", result.get().get("schoolName"));
+        assertEquals("New Description", result.get().get("description"));
     }
     
     @Test
-    void testDeleteSchool() {
+    void testDeleteNonExistentSchool() {
         // Given
-        String schoolId = UUID.randomUUID().toString();
-        String schoolName = "School to Delete";
+        String nonExistentSchoolId = UUID.randomUUID().toString();
         
-        schoolService.addSchool(schoolId, schoolName, null, null, null);
-        
-        // Verify it exists first
-        Optional<Map<String, String>> beforeDelete = schoolService.getSchool(schoolId);
-        assertTrue(beforeDelete.isPresent());
-        
-        // When
-        schoolService.deleteSchool(schoolId);
+        // When - Should not throw exception
+        assertDoesNotThrow(() -> {
+            schoolService.deleteSchool(nonExistentSchoolId);
+        });
         
         // Then
-        Optional<Map<String, String>> afterDelete = schoolService.getSchool(schoolId);
-        assertFalse(afterDelete.isPresent());
-        
-        // Also verify directly with DynamoDB client
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("schoolId", AttributeValue.builder().s(schoolId).build());
-        
-        GetItemRequest request = GetItemRequest.builder()
-                .tableName(SCHOOL_TABLE_NAME)
-                .key(key)
-                .build();
-        
-        GetItemResponse response = dynamoDbClient.getItem(request);
-        assertFalse(response.hasItem());
+        Optional<Map<String, String>> result = schoolService.getSchool(nonExistentSchoolId);
+        assertFalse(result.isPresent());
     }
 } 

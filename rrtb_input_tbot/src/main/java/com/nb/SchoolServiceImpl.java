@@ -14,11 +14,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.nb.service.SchoolService;
+
 /**
  * Service for managing school records in DynamoDB.
  */
 @Singleton
-public class SchoolService {
+public class SchoolServiceImpl implements SchoolService {
     // Table attribute constants
     public static final String SCHOOL_ID = "schoolId";
     public static final String SCHOOL_NAME = "schoolName";
@@ -33,7 +35,7 @@ public class SchoolService {
     
     private final DynamoDbClient dynamoDbClient;
     
-    public SchoolService(DynamoDbClient dynamoDbClient) {
+    public SchoolServiceImpl(DynamoDbClient dynamoDbClient) {
         this.dynamoDbClient = dynamoDbClient;
     }
     
@@ -44,6 +46,7 @@ public class SchoolService {
      * @return The generated school ID
      * @throws IllegalArgumentException if required parameters are missing
      */
+    @Override
     public String addSchool(String[] lines) {
         Map<String, String> params = parseParameters(lines);
         String schoolName = params.get(SCHOOL_NAME);
@@ -53,14 +56,33 @@ public class SchoolService {
         }
         
         String schoolId = UUID.randomUUID().toString();
+        String description = params.get(DESCRIPTION);
+        String location = params.get(LOCATION);
+        String telegramGroup = params.get(TELEGRAM_GROUP);
         
-        addSchool(
-            schoolId,
-            schoolName,
-            params.get(DESCRIPTION),
-            params.get(LOCATION),
-            params.get(TELEGRAM_GROUP)
-        );
+        Map<String, String> schoolData = new HashMap<>();
+        schoolData.put("schoolId", schoolId);
+        schoolData.put(SCHOOL_NAME, schoolName);
+        
+        if (description != null && !description.isEmpty()) {
+            schoolData.put(DESCRIPTION, description);
+        } else {
+            throw new IllegalArgumentException("School description is required");
+        }
+        
+        if (location != null && !location.isEmpty()) {
+            schoolData.put(LOCATION, location);
+        } else {
+            throw new IllegalArgumentException("School location is required");
+        }
+        
+        if (telegramGroup != null && !telegramGroup.isEmpty()) {
+            schoolData.put(TELEGRAM_GROUP, telegramGroup);
+        } else {
+            throw new IllegalArgumentException("School telegram group is required");
+        }
+        
+        saveSchool(schoolData);
         
         return schoolId;
     }
@@ -90,40 +112,12 @@ public class SchoolService {
     }
     
     /**
-     * Adds a new school to the database.
-     * 
-     * @param schoolId Unique identifier for the school
-     * @param schoolName Name of the school (required)
-     * @param description School description (optional)
-     * @param location School location (optional)
-     * @param telegramGroup Telegram group handle (optional)
-     */
-    public void addSchool(String schoolId, String schoolName, String description, String location, String telegramGroup) {
-        final Map<String, AttributeValue> item = new HashMap<>();
-        item.put(SCHOOL_ID, AttributeValue.builder().s(schoolId).build());
-        item.put(SCHOOL_NAME, AttributeValue.builder().s(schoolName).build());
-        
-        addOptionalAttribute(item, DESCRIPTION, description);
-        addOptionalAttribute(item, LOCATION, location);
-        addOptionalAttribute(item, TELEGRAM_GROUP, telegramGroup);
-
-        item.put(CREATED_AT, AttributeValue.builder().s(Instant.now().toString()).build());
-        item.put(TTL, createTtlAttribute());
-
-        final PutItemRequest request = PutItemRequest.builder()
-                .tableName(TABLE_NAME)
-                .item(item)
-                .build();
-
-        dynamoDbClient.putItem(request);
-    }
-    
-    /**
      * Retrieves a school by its ID.
      * 
      * @param schoolId The unique identifier of the school
      * @return Optional containing school attributes if found, empty otherwise
      */
+    @Override
     public Optional<Map<String, String>> getSchool(String schoolId) {
         final Map<String, AttributeValue> key = createSchoolIdKey(schoolId);
 
@@ -147,6 +141,7 @@ public class SchoolService {
      * @param schoolId The unique identifier of the school
      * @param data Map of attribute names to new values
      */
+    @Override
     public void updateSchool(String schoolId, Map<String, String> data) {
         // First retrieve the existing item
         final Map<String, AttributeValue> key = createSchoolIdKey(schoolId);
@@ -188,6 +183,7 @@ public class SchoolService {
      * 
      * @param schoolId The unique identifier of the school to delete
      */
+    @Override
     public void deleteSchool(String schoolId) {
         final Map<String, AttributeValue> key = createSchoolIdKey(schoolId);
 
@@ -197,6 +193,31 @@ public class SchoolService {
                 .build();
 
         dynamoDbClient.deleteItem(request);
+    }
+    
+    /**
+     * Saves a school to the database using a map of attributes.
+     * 
+     * @param schoolData Map containing the school attributes
+     */
+    private void saveSchool(Map<String, String> schoolData) {
+        final Map<String, AttributeValue> item = new HashMap<>();
+        
+        // Convert all string values to DynamoDB AttributeValues
+        schoolData.forEach((key, value) -> 
+            item.put(key, AttributeValue.builder().s(value).build())
+        );
+        
+        // Add timestamp and TTL
+        item.put(CREATED_AT, AttributeValue.builder().s(Instant.now().toString()).build());
+        item.put(TTL, createTtlAttribute());
+
+        final PutItemRequest request = PutItemRequest.builder()
+                .tableName(TABLE_NAME)
+                .item(item)
+                .build();
+
+        dynamoDbClient.putItem(request);
     }
     
     // Helper methods
