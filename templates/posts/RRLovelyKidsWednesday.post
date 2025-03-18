@@ -3,10 +3,9 @@
 #scheduledDay: Wednesday
 #scheduledTime: 11:00 
 #body:
-Доброго ранку! 
-🔔 Шановнi батьки!
+Доброго дня 🔔 Шановнi батьки!
 
-СЬОГОДНІ, 12 березня 2025 року, у школі LovelyKids  (https://maps.app.goo.gl/MvKp8ZswapwaL3qEA?g_st=it)🇺🇦 локація в Mamaia (https://maps.app.goo.gl/MvKp8ZswapwaL3qEA?g_st=it) 🇷🇴 на вас чекають захоплюючі заняття з робототехніки RoboRox! 🤖🔧
+СЬОГОДНІ, {{date}}, у школі LovelyKids  (https://maps.app.goo.gl/MvKp8ZswapwaL3qEA?g_st=it)🇺🇦 локація в Mamaia (https://maps.app.goo.gl/MvKp8ZswapwaL3qEA?g_st=it) 🇷🇴 на вас чекають захоплюючі заняття з робототехніки RoboRox! 🤖🔧
 
 📅 РОЗКЛАД ЗАНЯТЬ:
 
