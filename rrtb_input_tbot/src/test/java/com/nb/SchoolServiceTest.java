@@ -33,7 +33,7 @@ class SchoolServiceTest extends AbstractTest {
         ScanResponse response = dynamoDbClient.scan(scanRequest);
         response.items().forEach(item -> {
             Map<String, AttributeValue> key = new HashMap<>();
-            key.put("schoolId", item.get("schoolId"));
+            key.put("id", item.get("id"));
             
             DeleteItemRequest deleteRequest = DeleteItemRequest.builder()
                     .tableName(SCHOOL_TABLE_NAME)
@@ -66,7 +66,7 @@ class SchoolServiceTest extends AbstractTest {
         assertTrue(result.isPresent());
         
         Map<String, String> school = result.get();
-        assertEquals(schoolId, school.get("schoolId"));
+        assertEquals(schoolId, school.get("id"));
         assertEquals("Test School From Lines", school.get("schoolName"));
         assertEquals("Test Description From Lines", school.get("description"));
         assertEquals("Test Location From Lines", school.get("location"));
