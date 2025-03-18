@@ -22,7 +22,7 @@ import com.nb.service.SchoolService;
 @Singleton
 public class SchoolServiceImpl implements SchoolService {
     // Table attribute constants
-    public static final String SCHOOL_ID = "schoolId";
+    public static final String SCHOOL_ID = "id";
     public static final String SCHOOL_NAME = "schoolName";
     public static final String DESCRIPTION = "description";
     public static final String LOCATION = "location";
@@ -61,7 +61,7 @@ public class SchoolServiceImpl implements SchoolService {
         String telegramGroup = params.get(TELEGRAM_GROUP);
         
         Map<String, String> schoolData = new HashMap<>();
-        schoolData.put("schoolId", schoolId);
+        schoolData.put(SCHOOL_ID, schoolId);
         schoolData.put(SCHOOL_NAME, schoolName);
         
         if (description != null && !description.isEmpty()) {
