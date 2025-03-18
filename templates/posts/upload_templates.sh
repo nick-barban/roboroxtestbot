@@ -39,7 +39,7 @@ for file in "$TEMPLATES_DIR"/*.post; do
     if [ -f "$file" ]; then
         filename=$(basename "$file")
         echo "Uploading $filename to s3://$BUCKET_NAME/templates/$filename"
-        aws s3 cp "$file" "s3://$BUCKET_NAME/templates/$filename" --acl public-read
+        aws s3 cp "$file" "s3://$BUCKET_NAME/templates/$filename"
         UPLOADED=$((UPLOADED + 1))
         echo "Progress: $UPLOADED/$POST_FILES"
     fi
