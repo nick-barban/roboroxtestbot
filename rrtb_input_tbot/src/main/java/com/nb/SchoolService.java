@@ -63,14 +63,20 @@ public class SchoolService {
         
         if (description != null && !description.isEmpty()) {
             schoolData.put(DESCRIPTION, description);
+        } else {
+            throw new IllegalArgumentException("School description is required");
         }
         
         if (location != null && !location.isEmpty()) {
             schoolData.put(LOCATION, location);
+        } else {
+            throw new IllegalArgumentException("School location is required");
         }
         
         if (telegramGroup != null && !telegramGroup.isEmpty()) {
             schoolData.put(TELEGRAM_GROUP, telegramGroup);
+        } else {
+            throw new IllegalArgumentException("School telegram group is required");
         }
         
         saveSchool(schoolData);

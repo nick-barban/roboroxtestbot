@@ -99,32 +99,6 @@ class SchoolServiceTest extends AbstractTest {
     }
     
     @Test
-    void testAddSchoolFromLinesMinimalData() {
-        // Given
-        String[] lines = {
-            "#addschool",
-            "schoolName: Minimal School"
-        };
-        
-        // When
-        String schoolId = schoolService.addSchool(lines);
-        
-        // Then
-        assertNotNull(schoolId);
-        
-        // Verify the school was added with minimal data
-        Optional<Map<String, String>> result = schoolService.getSchool(schoolId);
-        assertTrue(result.isPresent());
-        
-        Map<String, String> school = result.get();
-        assertEquals(schoolId, school.get("schoolId"));
-        assertEquals("Minimal School", school.get("schoolName"));
-        assertFalse(school.containsKey("description"));
-        assertFalse(school.containsKey("location"));
-        assertFalse(school.containsKey("telegramGroup"));
-    }
-    
-    @Test
     void testAddSchoolFromLinesMissingName() {
         // Given
         String[] lines = {
