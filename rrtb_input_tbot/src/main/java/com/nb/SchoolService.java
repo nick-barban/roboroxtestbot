@@ -53,14 +53,27 @@ public class SchoolService {
         }
         
         String schoolId = UUID.randomUUID().toString();
+        String description = params.get(DESCRIPTION);
+        String location = params.get(LOCATION);
+        String telegramGroup = params.get(TELEGRAM_GROUP);
         
-        addSchool(
-            schoolId,
-            schoolName,
-            params.get(DESCRIPTION),
-            params.get(LOCATION),
-            params.get(TELEGRAM_GROUP)
-        );
+        Map<String, String> schoolData = new HashMap<>();
+        schoolData.put("schoolId", schoolId);
+        schoolData.put(SCHOOL_NAME, schoolName);
+        
+        if (description != null && !description.isEmpty()) {
+            schoolData.put(DESCRIPTION, description);
+        }
+        
+        if (location != null && !location.isEmpty()) {
+            schoolData.put(LOCATION, location);
+        }
+        
+        if (telegramGroup != null && !telegramGroup.isEmpty()) {
+            schoolData.put(TELEGRAM_GROUP, telegramGroup);
+        }
+        
+        saveSchool(schoolData);
         
         return schoolId;
     }
@@ -197,6 +210,31 @@ public class SchoolService {
                 .build();
 
         dynamoDbClient.deleteItem(request);
+    }
+    
+    /**
+     * Saves a school to the database using a map of attributes.
+     * 
+     * @param schoolData Map containing the school attributes
+     */
+    private void saveSchool(Map<String, String> schoolData) {
+        final Map<String, AttributeValue> item = new HashMap<>();
+        
+        // Convert all string values to DynamoDB AttributeValues
+        schoolData.forEach((key, value) -> 
+            item.put(key, AttributeValue.builder().s(value).build())
+        );
+        
+        // Add timestamp and TTL
+        item.put(CREATED_AT, AttributeValue.builder().s(Instant.now().toString()).build());
+        item.put(TTL, createTtlAttribute());
+
+        final PutItemRequest request = PutItemRequest.builder()
+                .tableName(TABLE_NAME)
+                .item(item)
+                .build();
+
+        dynamoDbClient.putItem(request);
     }
     
     // Helper methods
