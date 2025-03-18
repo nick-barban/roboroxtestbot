@@ -86,10 +86,10 @@ public abstract class AbstractTest implements TestPropertyProvider {
         CreateTableRequest schoolTableRequest = CreateTableRequest.builder()
                 .tableName(SCHOOL_TABLE_NAME)
                 .keySchema(
-                    KeySchemaElement.builder().attributeName("schoolId").keyType(KeyType.HASH).build()
+                    KeySchemaElement.builder().attributeName("id").keyType(KeyType.HASH).build()
                 )
                 .attributeDefinitions(
-                    AttributeDefinition.builder().attributeName("schoolId").attributeType(ScalarAttributeType.S).build()
+                    AttributeDefinition.builder().attributeName("id").attributeType(ScalarAttributeType.S).build()
                 )
                 .provisionedThroughput(ProvisionedThroughput.builder()
                     .readCapacityUnits(5L)
