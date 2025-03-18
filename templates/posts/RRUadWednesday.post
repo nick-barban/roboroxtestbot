@@ -1,0 +1,35 @@
+# 🤖 RoboRox at UAD - Wednesday Classes 🤖
+
+## Today's Schedule - {{date}}
+
+**Location**: Ukrainian Academy of Dance
+**Address**: {{address}}
+
+### Classes:
+{{#each classes}}
+- **{{time}}**: {{class_name}} ({{age_group}})
+  👨‍🏫 Instructor: {{instructor}}
+  {{#if notes}}
+  📝 {{notes}}
+  {{/if}}
+
+{{/each}}
+
+## Today's Topic
+{{topic_description}}
+
+{{#if materials_needed}}
+## Materials Needed
+{{#each materials_needed}}
+- {{this}}
+{{/each}}
+{{/if}}
+
+## Reminders
+{{#each reminders}}
+- {{this}}
+{{/each}}
+
+We look forward to seeing you today!
+
+#roborox #uad #wednesday #robotics 
