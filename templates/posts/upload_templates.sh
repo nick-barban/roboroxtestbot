@@ -14,6 +14,7 @@ BUCKET_NAME=${1:-$DEFAULT_BUCKET}
 
 # Directory containing post templates
 TEMPLATES_DIR="$(dirname "$0")"
+echo "Templates directory: $TEMPLATES_DIR"
 
 echo "Starting upload to S3 bucket: $BUCKET_NAME"
 
@@ -29,21 +30,22 @@ if ! aws sts get-caller-identity &> /dev/null; then
     exit 1
 fi
 
-# Count total number of .post files
+# Count total number of .post files recursively
 POST_FILES=$(find "$TEMPLATES_DIR" -name "*.post" | wc -l)
 echo "Found $POST_FILES post template files to upload."
 
-# Upload each .post file to S3
+# Upload each .post file to S3, preserving directory structure
 UPLOADED=0
-for file in "$TEMPLATES_DIR"/*.post; do
+while IFS= read -r file; do
     if [ -f "$file" ]; then
-        filename=$(basename "$file")
-        echo "Uploading $filename to s3://$BUCKET_NAME/templates/$filename"
-        aws s3 cp "$file" "s3://$BUCKET_NAME/templates/$filename"
+        # Get the relative path from TEMPLATES_DIR
+        rel_path=${file#"$TEMPLATES_DIR/"}
+        echo "Uploading $rel_path to s3://$BUCKET_NAME/templates/$rel_path"
+        aws s3 cp "$file" "s3://$BUCKET_NAME/templates/$rel_path"
         UPLOADED=$((UPLOADED + 1))
         echo "Progress: $UPLOADED/$POST_FILES"
     fi
-done
+done < <(find "$TEMPLATES_DIR" -name "*.post")
 
 echo "Upload complete! $UPLOADED files uploaded to s3://$BUCKET_NAME/templates/"
 echo "Templates are accessible at: https://$BUCKET_NAME.s3.amazonaws.com/templates/" 
