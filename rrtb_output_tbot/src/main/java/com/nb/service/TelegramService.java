@@ -5,6 +5,7 @@ import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -35,6 +36,7 @@ public class TelegramService extends TelegramLongPollingBot {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
             sendMessage.setText(message);
+            sendMessage.setParseMode(ParseMode.MARKDOWNV2);
             execute(sendMessage);
         } catch (TelegramApiException e) {
             LOG.error("Error sending message to Telegram", e);
