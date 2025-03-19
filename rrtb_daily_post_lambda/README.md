@@ -47,3 +47,43 @@ Handler: com.nb.FunctionRequestHandler
 - [https://maven.apache.org/enforcer/maven-enforcer-plugin/](https://maven.apache.org/enforcer/maven-enforcer-plugin/)
 
 
+# RoboRoxTestBot Daily Post Lambda
+
+This is a Lambda function that handles scheduling and sending daily posts to chats.
+
+## Development
+
+### Running Tests
+
+To run the tests, you need to set the `POSTS_BUCKET_NAME` environment variable:
+
+```bash
+POSTS_BUCKET_NAME=test-bucket mvn test
+```
+
+Or if you want to run a specific test:
+
+```bash
+POSTS_BUCKET_NAME=test-bucket mvn test -Dtest=SchedulerHandlerTest
+```
+
+### Building
+
+To build the project:
+
+```bash
+mvn clean package
+```
+
+## Configuration
+
+The application requires the following environment variables:
+
+- `POSTS_BUCKET_NAME`: The S3 bucket where post templates are stored
+- `OUTPUT_QUEUE`: The SQS queue where messages will be sent
+
+## Architecture
+
+The SchedulerHandler lambda reads post templates from an S3 bucket, substitutes date placeholders, and sends the formatted messages to the appropriate chats via an SQS queue.
+
+

@@ -18,12 +18,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.Map;
 
 @SerdeImport(ScheduledEvent.class)
 public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Void> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SchedulerHandler.class);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("uk", "UA"));
+    private static final String DATE_PLACEHOLDER = "{{date}}";
 
     @Inject
     private FileService fileService;
@@ -60,10 +64,11 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
 
     private void sendPost(Chat chat, @NonNull String text) {
         try {
+            String processedText = text.replace(DATE_PLACEHOLDER, LocalDate.now().format(DATE_FORMATTER));
             final Update update = new Update();
             final Message message = new Message();
             message.setChat(chat);
-            message.setText(text);
+            message.setText(processedText);
             update.setMessage(message);
             final String msg = objectMapper.writeValueAsString(update);
             producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));

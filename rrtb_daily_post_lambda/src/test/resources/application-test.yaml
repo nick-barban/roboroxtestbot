@@ -1,1 +1,11 @@
 POSTS_BUCKET_NAME: test-bucket
+
+micronaut:
+  object-storage:
+    aws:
+      posts:
+        bucket: test-bucket
+        enabled: true
+  application:
+    name: rrtb-daily-post-lambda-test
+
