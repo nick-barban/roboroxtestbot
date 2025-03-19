@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Locale;
@@ -20,19 +19,27 @@ import java.util.stream.Collectors;
 public class FileServiceImpl implements FileService {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileServiceImpl.class);
-
     private final AwsS3Operations awsS3Operations;
 
     public FileServiceImpl(@Named("posts") AwsS3Operations awsS3Operations) {
         this.awsS3Operations = awsS3Operations;
     }
 
+    private Map<String, String> readPosts(String prefix) {
+            LOG.info("Reading files with prefix: {}", prefix);
+            final Set<String> objects = awsS3Operations.listObjects();
+            LOG.info("Next files were read: {}", objects);
+    
+            return objects.stream()
+                    .filter(key -> key.startsWith(prefix))
+                .collect(Collectors.toMap(s -> s, this::retrieve));
+    }
+
     @Override
-    public Map<String, String> readPosts() {
-        LOG.info("Reading files");
-        final Set<String> objects = awsS3Operations.listObjects();
-        LOG.info("Stored files: {}", objects);
-        return objects.stream().collect(Collectors.toMap(s -> s, this::retrieve));
+    public Map<String, String> readTodayPosts() {
+        final String today = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+        final String prefix = "templates/daily/%s/".formatted(today.toLowerCase());
+        return readPosts(prefix);
     }
 
     private String retrieve(String s) {
@@ -48,14 +55,5 @@ public class FileServiceImpl implements FileService {
             LOG.warn("Failed to read s3 object storage entry: %s".formatted(entry.getKey()), e);
             return null;
         }
-    }
-
-    @Override
-    public Map<String, String> readTodayPosts() {
-        final String dayOfWeek = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
-        
-
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'readTodayPosts'");
     }
 }
