@@ -8,6 +8,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,5 +48,14 @@ public class FileServiceImpl implements FileService {
             LOG.warn("Failed to read s3 object storage entry: %s".formatted(entry.getKey()), e);
             return null;
         }
+    }
+
+    @Override
+    public Map<String, String> readTodayPosts() {
+        final String dayOfWeek = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+        
+
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'readTodayPosts'");
     }
 }

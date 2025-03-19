@@ -38,7 +38,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
     public Void execute(ScheduledEvent input) {
         LOG.info("Scheduled handler invocation");
 
-        final Map<String, String> posts = fileService.readPosts();
+        final Map<String, String> posts = fileService.readTodayPosts();
         LOG.info("Read {} posts", posts.size());
 
         posts.forEach((name, post) -> {
