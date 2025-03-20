@@ -8,6 +8,7 @@ import io.micronaut.chatbots.telegram.api.Chat;
 import io.micronaut.chatbots.telegram.api.Message;
 import io.micronaut.chatbots.telegram.api.Update;
 import io.micronaut.core.annotation.NonNull;
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.function.aws.MicronautRequestHandler;
 import io.micronaut.json.JsonMapper;
@@ -50,12 +51,12 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
                 LOG.warn("No post for name {}", name);
             } else {
                 try {
-                    Long chatId = getChatId(post);
-                    final Chat chat = new Chat();
-                    String chatName = getChatName(post);
-                    chat.setTitle(chatName);
-                    chat.setType("supergroup");
-                    chat.setId(chatId);
+        //     Long chatId = getChatId(post);
+        //     final Chat chat = new Chat();
+        //      String chatName = getChatName(post);
+        // chat.setTitle(chatName);
+        // chat.setType("supergroup");
+        final Chat chat = getChat(name);
                     sendPost(chat, post);
                 } catch (Exception e) {
                     LOG.error("Could not send post: %s as could not obtain chat: {}".formatted(name), e);
@@ -66,7 +67,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
         return null;
     }
 
-    private String getChatName(String text) {
+    private String getChatName(String text){
         String[] split = text.split("\n");
         return Arrays.stream(split)
             .filter(line -> line.startsWith("#telegramGroup:"))
@@ -99,5 +100,10 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
             .map(line -> line.split(":")[1].trim())
             .map(Long::parseLong)
             .orElseThrow();
+    }
+
+    private Chat getChat(String postName) throws Exception {
+        final String chatName = postName.split("_")[0];
+        return chatRepository.getChatByName(chatName).orElseThrow(Exception::new);
     }
 }
