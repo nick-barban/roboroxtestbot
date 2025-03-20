@@ -16,9 +16,9 @@ import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
@@ -49,9 +49,13 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
             if (StringUtils.isEmpty(post)) {
                 LOG.warn("No post for name {}", name);
             } else {
-                final Chat chat;
                 try {
-                    chat = getChat(name);
+                    Long chatId = getChatId(post);
+                    final Chat chat = new Chat();
+                    String chatName = getChatName(post);
+                    chat.setTitle(chatName);
+                    chat.setType("supergroup");
+                    chat.setId(chatId);
                     sendPost(chat, post);
                 } catch (Exception e) {
                     LOG.error("Could not send post: %s as could not obtain chat: {}".formatted(name), e);
@@ -60,6 +64,15 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
         });
 
         return null;
+    }
+
+    private String getChatName(String text) {
+        String[] split = text.split("\n");
+        return Arrays.stream(split)
+            .filter(line -> line.startsWith("#telegramGroup:"))
+            .findFirst()
+            .map(line -> line.split(":")[1].trim())
+            .orElseThrow();
     }
 
     private void sendPost(Chat chat, @NonNull String text) {
@@ -73,13 +86,18 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
             final String msg = objectMapper.writeValueAsString(update);
             producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
             LOG.info("Send post: {} to output queue", chat.getTitle());
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.error("Could not send post: %s".formatted(chat.getTitle()), e);
         }
     }
 
-    private Chat getChat(String postName) throws Exception {
-        final String chatName = postName.split("_")[0];
-        return chatRepository.getChatByName(chatName).orElseThrow(Exception::new);
+    private Long getChatId(String text) throws Exception {
+        String[] split = text.split("\n");
+        return Arrays.stream(split)
+            .filter(line -> line.startsWith("#chatId:"))
+            .findFirst()
+            .map(line -> line.split(":")[1].trim())
+            .map(Long::parseLong)
+            .orElseThrow();
     }
 }
