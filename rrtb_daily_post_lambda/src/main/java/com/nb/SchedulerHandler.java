@@ -8,7 +8,6 @@ import io.micronaut.chatbots.telegram.api.Chat;
 import io.micronaut.chatbots.telegram.api.Message;
 import io.micronaut.chatbots.telegram.api.Update;
 import io.micronaut.core.annotation.NonNull;
-import io.micronaut.core.annotation.Nullable;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.function.aws.MicronautRequestHandler;
 import io.micronaut.json.JsonMapper;

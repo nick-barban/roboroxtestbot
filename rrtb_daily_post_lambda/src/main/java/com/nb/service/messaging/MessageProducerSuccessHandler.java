@@ -21,7 +21,7 @@ public class MessageProducerSuccessHandler implements JMSListenerSuccessHandler 
     @Override
     public void handle(@NonNull Session session, @NonNull Message message) throws JMSException {
         messageCount.incrementAndGet();
-        LOG.debug("Successfully sent message: id={}, text={}", message.getJMSMessageID(), message.getBody(String.class));
+        LOG.info("Successfully sent message: id={}, text={}", message.getJMSMessageID(), message.getBody(String.class));
     }
 
     public int getMessageCount() {
