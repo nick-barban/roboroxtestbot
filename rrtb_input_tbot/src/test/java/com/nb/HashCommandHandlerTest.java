@@ -10,8 +10,11 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import com.nb.service.SchoolService;
 
@@ -32,9 +35,6 @@ class HashCommandHandlerTest extends AbstractTest {
     private HashCommandHandler hashCommandHandler;
 
     @Inject
-    private SpaceParser<Update, Chat> spaceParser;
-
-    @Inject
     private SchoolService schoolService;
 
     @Inject
@@ -42,10 +42,27 @@ class HashCommandHandlerTest extends AbstractTest {
 
     @Inject
     private JsonMapper jsonMapper;
+    
+    @MockBean(SpaceParser.class)
+    SpaceParser<Update, Chat> spaceParser() {
+        return Mockito.mock(SpaceParser.class);
+    }
+    
+    @Inject
+    private SpaceParser<Update, Chat> spaceParser;
+    
+    private Chat mockChat;
 
     @MockBean(SchoolService.class)
     SchoolService schoolService() {
-        return mock(SchoolService.class);
+        return Mockito.mock(SchoolService.class);
+    }
+    
+    @BeforeEach
+    void setUp() {
+        // Initialize mockChat for use in tests
+        mockChat = new Chat();
+        mockChat.setId(123456L);
     }
 
     @Test
@@ -81,8 +98,8 @@ class HashCommandHandlerTest extends AbstractTest {
     void handlesAddSchoolCommand() throws IOException {
         // Arrange
         Update update = jsonMapper.readValue(getHashCommandJson(), Update.class);
-        when(schoolService.addSchool(any())).thenReturn("test-school-id");
-        when(spaceParser.parse(update)).thenReturn(Optional.of(update.getMessage().getChat()));
+        Mockito.when(schoolService.addSchool(any(String[].class))).thenReturn("test-school-id");
+        Mockito.when(spaceParser.parse(update)).thenReturn(Optional.of(mockChat));
 
         // Act
         Optional<SendMessage> result = hashCommandHandler.handle(null, update);
@@ -94,7 +111,7 @@ class HashCommandHandlerTest extends AbstractTest {
         
         // Verify service was called with correct parameters
         ArgumentCaptor<String[]> linesCaptor = ArgumentCaptor.forClass(String[].class);
-        verify(schoolService).addSchool(linesCaptor.capture());
+        Mockito.verify(schoolService).addSchool(linesCaptor.capture());
         String[] capturedLines = linesCaptor.getValue();
         assertEquals(5, capturedLines.length); // Command + 4 parameters
         assertEquals("#addschool", capturedLines[0]);
@@ -105,7 +122,7 @@ class HashCommandHandlerTest extends AbstractTest {
     void handlesUnknownHashCommand() throws IOException {
         // Arrange
         Update update = jsonMapper.readValue(getInvalidHashCommandJson(), Update.class);
-        when(spaceParser.parse(update)).thenReturn(Optional.of(update.getMessage().getChat()));
+        Mockito.when(spaceParser.parse(update)).thenReturn(Optional.of(mockChat));
 
         // Act
         Optional<SendMessage> result = hashCommandHandler.handle(null, update);
@@ -116,15 +133,16 @@ class HashCommandHandlerTest extends AbstractTest {
         assertTrue(message.getText().contains("Unknown hash command"));
         
         // Verify school service was not called
-        verify(schoolService, never()).addSchool(any());
+        Mockito.verify(schoolService, never()).addSchool(any());
     }
 
     @Test
     void handlesInvalidAddSchoolCommand() throws IOException {
         // Arrange
         Update update = jsonMapper.readValue(getInvalidAddSchoolCommandJson(), Update.class);
-        when(spaceParser.parse(update)).thenReturn(Optional.of(update.getMessage().getChat()));
-        when(schoolService.addSchool(any())).thenThrow(new IllegalArgumentException("School description is required"));
+        Mockito.when(spaceParser.parse(update)).thenReturn(Optional.of(mockChat));
+        Mockito.when(schoolService.addSchool(any(String[].class)))
+               .thenThrow(new IllegalArgumentException("School description is required"));
 
         // Act
         Optional<SendMessage> result = hashCommandHandler.handle(null, update);
@@ -139,7 +157,8 @@ class HashCommandHandlerTest extends AbstractTest {
     void dispatchesToHashCommandHandler() throws IOException {
         // Arrange
         Update update = jsonMapper.readValue(getHashCommandJson(), Update.class);
-        when(schoolService.addSchool(any())).thenReturn("test-school-id");
+        Mockito.when(spaceParser.parse(update)).thenReturn(Optional.of(mockChat));
+        Mockito.when(schoolService.addSchool(any(String[].class))).thenReturn("test-school-id");
 
         // Act
         Optional<Send> result = dispatcher.dispatch(null, update);
