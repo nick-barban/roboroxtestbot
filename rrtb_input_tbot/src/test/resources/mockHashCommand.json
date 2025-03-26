@@ -1,0 +1,23 @@
+{
+  "update_id": 952034418,
+  "message": {
+    "message_id": 448,
+    "from": {
+      "id": 613021175,
+      "is_bot": false,
+      "first_name": "John",
+      "last_name": "Del Amo",
+      "username": "johnsnow",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": 613021175,
+      "first_name": "John",
+      "last_name": "Del Amo",
+      "username": "johnsnow",
+      "type": "private"
+    },
+    "date": 1662545500,
+    "text": "#addschool\nschoolName: Test School\ndescription: A test school for unit testing\nlocation: Test Location\ntelegramGroup: @testgroup"
+  }
+} 

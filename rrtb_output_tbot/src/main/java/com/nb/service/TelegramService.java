@@ -31,20 +31,26 @@ public class TelegramService extends TelegramLongPollingBot {
         return config.getBotUsername();
     }
 
-    private void sendMessage(String message, Long chatId) {
+    private String escapeHashTags(String message) {
+        if (message == null) {
+            return null;
+        }
+        return message.replace("#", "\\#");
+    }
+
+    private void sendMessage(Long chatId, String message) {
         try {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
-            sendMessage.setText(message);
-            sendMessage.setParseMode(ParseMode.MARKDOWNV2);
+            sendMessage.setText(escapeHashTags(message));
             execute(sendMessage);
         } catch (TelegramApiException e) {
-            LOG.error("Error sending message to Telegram", e);
+            LOG.error("Error sending message: {}", e.getMessage());
         }
     }
 
     public void sendMessage(Message message) {
         LOG.debug("Telegram bot configuration:\n\ttoken={}\n\tusername={}", this.config.getBotToken(), this.config.getBotUsername());
-        sendMessage(message.getText(), message.getChatId());
+        sendMessage(message.getChatId(), message.getText());
     }
 }
