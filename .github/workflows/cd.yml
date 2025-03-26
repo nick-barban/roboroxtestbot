@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -62,7 +62,7 @@ jobs:
       - name: Check for template changes
         id: check_changes
         run: |
-          CHANGED_TEMPLATES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }} ${{ github.event.workflow_run.base_commit.id }} | grep '^templates/')
+          CHANGED_TEMPLATES=$(git diff --name-only HEAD^ HEAD | grep '^templates/')
           if [ -n "$CHANGED_TEMPLATES" ]; then
             echo "changed_templates=true" >> $GITHUB_OUTPUT
             echo "Found changed templates:"
@@ -75,7 +75,7 @@ jobs:
       - name: Upload changed templates to S3
         if: steps.check_changes.outputs.changed_templates == 'true'
         run: |
-          CHANGED_TEMPLATES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }} ${{ github.event.workflow_run.base_commit.id }} | grep '^templates/')
+          CHANGED_TEMPLATES=$(git diff --name-only HEAD^ HEAD | grep '^templates/')
           for template in $CHANGED_TEMPLATES; do
             echo "Uploading $template to S3..."
             aws s3 cp $template s3://${{ secrets.TEMPLATES_BUCKET }}/$template
