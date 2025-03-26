@@ -44,8 +44,45 @@ jobs:
             rrtb_infra/package.json
             rrtb_infra/package-lock.json
 
-  deploy-dev:
+  update-templates:
     needs: prepare-deployment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Check for template changes
+        id: check_changes
+        run: |
+          CHANGED_TEMPLATES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }} ${{ github.event.workflow_run.base_commit.id }} | grep '^templates/')
+          if [ -n "$CHANGED_TEMPLATES" ]; then
+            echo "changed_templates=true" >> $GITHUB_OUTPUT
+            echo "Found changed templates:"
+            echo "$CHANGED_TEMPLATES"
+          else
+            echo "changed_templates=false" >> $GITHUB_OUTPUT
+            echo "No template changes found"
+          fi
+      
+      - name: Upload changed templates to S3
+        if: steps.check_changes.outputs.changed_templates == 'true'
+        run: |
+          CHANGED_TEMPLATES=$(git diff --name-only ${{ github.event.workflow_run.head_commit.id }} ${{ github.event.workflow_run.base_commit.id }} | grep '^templates/')
+          for template in $CHANGED_TEMPLATES; do
+            echo "Uploading $template to S3..."
+            aws s3 cp $template s3://${{ secrets.TEMPLATES_BUCKET }}/$template
+          done
+
+  deploy-dev:
+    needs: [prepare-deployment, update-templates]
     runs-on: ubuntu-latest
     environment: development
     steps:
@@ -89,7 +126,7 @@ jobs:
           npx cdk deploy --require-approval never
 
   deploy-test:
-    needs: deploy-dev
+    needs: [deploy-dev, update-templates]
     runs-on: ubuntu-latest
     environment: test
     steps:
@@ -133,7 +170,7 @@ jobs:
           npx cdk deploy --require-approval never
 
   deploy-prod:
-    needs: deploy-test
+    needs: [deploy-test, update-templates]
     runs-on: ubuntu-latest
     environment: production
     steps:
