@@ -139,6 +139,7 @@ jobs:
 
   deploy-test:
     needs: [deploy-dev, update-templates]
+    needs: [deploy-dev, update-templates]
     runs-on: ubuntu-latest
     environment: test
     steps:
@@ -182,6 +183,7 @@ jobs:
           npx cdk deploy --require-approval never
 
   deploy-prod:
+    needs: [deploy-test, update-templates]
     needs: [deploy-test, update-templates]
     runs-on: ubuntu-latest
     environment: production
