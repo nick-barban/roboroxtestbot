@@ -183,7 +183,6 @@ jobs:
 
   deploy-prod:
     needs: [deploy-test, update-templates]
-    needs: [deploy-test, update-templates]
     runs-on: ubuntu-latest
     environment: production
     steps:
