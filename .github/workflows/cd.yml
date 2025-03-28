@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -62,14 +62,17 @@ jobs:
       - name: Check for template changes
         id: check_changes
         run: |
-          # Get the list of files changed in the triggering workflow
-          CHANGED_FILES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_commit.id }}/pulls" | \
-            jq -r '.[0].changed_files[]')
-          
-          # Filter for template changes
-          CHANGED_TEMPLATES=$(echo "$CHANGED_FILES" | grep '^templates/' || true)
-          
+          echo "Current directory: $(pwd)"
+          echo "Git status:"
+          git status
+          echo "Git log last 2 commits:"
+          git log -2 --oneline
+          echo "Running git diff command..."
+          CHANGED_TEMPLATES=$(git diff --name-only HEAD^ HEAD | grep '^templates/')
+          echo "Git diff output:"
+          git diff --name-only HEAD^ HEAD
+          echo "Filtered template changes:"
+          echo "$CHANGED_TEMPLATES"
           if [ -n "$CHANGED_TEMPLATES" ]; then
             echo "changed_templates=true" >> $GITHUB_OUTPUT
             echo "Found changed templates:"
@@ -82,13 +85,8 @@ jobs:
       - name: Upload changed templates to S3
         if: steps.check_changes.outputs.changed_templates == 'true'
         run: |
-          # Get the list of files changed in the triggering workflow
-          CHANGED_FILES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.event.workflow_run.head_commit.id }}/pulls" | \
-            jq -r '.[0].changed_files[]')
-          
-          # Filter and upload template changes
-          echo "$CHANGED_FILES" | grep '^templates/' | while read -r template; do
+          CHANGED_TEMPLATES=$(git diff --name-only HEAD^ HEAD | grep '^templates/')
+          for template in $CHANGED_TEMPLATES; do
             echo "Uploading $template to S3..."
             aws s3 cp $template s3://${{ secrets.TEMPLATES_BUCKET }}/$template
           done
