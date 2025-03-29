@@ -43,7 +43,9 @@
             ],
             "Resource": [
                 "arn:aws:s3:::cdk-rrtb-assets-${YOUR_ACCOUNT_ID}-us-east-1",
-                "arn:aws:s3:::cdk-rrtb-assets-${YOUR_ACCOUNT_ID}-us-east-1/*"
+                "arn:aws:s3:::cdk-rrtb-assets-${YOUR_ACCOUNT_ID}-us-east-1/*",
+                "arn:aws:s3:::${TEMPLATES_BUCKET}",
+                "arn:aws:s3:::${TEMPLATES_BUCKET}/*"
             ]
         },
         {
