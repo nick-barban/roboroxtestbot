@@ -45,7 +45,7 @@ jobs:
             rrtb_infra/package-lock.json
 
   update-templates:
-    needs: prepare-deployment
+    needs: deploy-prod
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -95,7 +95,7 @@ jobs:
           done
 
   deploy-dev:
-    needs: [prepare-deployment, update-templates]
+    needs: prepare-deployment
     runs-on: ubuntu-latest
     environment: development
     steps:
@@ -139,7 +139,7 @@ jobs:
           npx cdk deploy --require-approval never
 
   deploy-test:
-    needs: [deploy-dev, update-templates]
+    needs: deploy-dev
     runs-on: ubuntu-latest
     environment: test
     steps:
@@ -183,7 +183,7 @@ jobs:
           npx cdk deploy --require-approval never
 
   deploy-prod:
-    needs: [deploy-test, update-templates]
+    needs: deploy-test
     runs-on: ubuntu-latest
     environment: production
     steps:
