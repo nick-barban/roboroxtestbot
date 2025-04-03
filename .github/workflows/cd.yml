@@ -127,6 +127,7 @@ jobs:
         run: |
           cd rrtb_infra
           sed -i "s/\${AWS_ACCOUNT_ID}/${{ env.AWS_ACCOUNT_ID }}/g" github-actions-policy.json
+          sed -i "s/\${TEMPLATES_BUCKET}/${{ secrets.TEMPLATES_BUCKET }}/g" github-actions-policy.json
           
       - name: Bootstrap CDK
         run: |
