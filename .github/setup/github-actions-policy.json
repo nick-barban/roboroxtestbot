@@ -73,6 +73,8 @@
                 "arn:aws:ssm:*:*:parameter/*",
                 "arn:aws:s3:::cdk-*",
                 "arn:aws:s3:::cdk-*/*",
+                "arn:aws:s3:::{TEMPLATES_BUCKET}",
+                "arn:aws:s3:::{TEMPLATES_BUCKET}/*",
                 "arn:aws:cloudformation:*:*:stack/CDKToolkit/*",
                 "arn:aws:cloudformation:*:*:stack/CDK*/*",
                 "arn:aws:cloudformation:*:*:stack/*",
