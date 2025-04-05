@@ -63,36 +63,108 @@ jobs:
       - name: Check for template changes
         id: check_changes
         run: |
-          echo "Current directory: $(pwd)"
-          echo "Git status:"
-          git status
-          echo "Git log last 2 commits:"
-          git log -2 --oneline
-          echo "Running git diff command..."
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
-          echo "Git diff output:"
-          echo "$CHANGED_FILES"
-          echo "Filtering for template changes..."
-          CHANGED_TEMPLATES=$(echo "$CHANGED_FILES" | grep '^templates/' || true)
-          echo "Filtered template changes:"
-          echo "$CHANGED_TEMPLATES"
-          if [ -n "$CHANGED_TEMPLATES" ]; then
-            echo "changed_templates=true" >> $GITHUB_OUTPUT
-            echo "Found changed templates:"
-            echo "$CHANGED_TEMPLATES"
+          echo "Checking all local templates against S3 and comparing checksums..."
+          # Ensure AWS CLI output is JSON for easier parsing
+          export AWS_PAGER=""
+          export AWS_DEFAULT_OUTPUT=json
+          
+          # Find all files in the local templates directory
+          LOCAL_TEMPLATES=$(find templates/ -type f || true)
+          FILES_TO_UPLOAD=""
+
+          if [ -z "$LOCAL_TEMPLATES" ]; then
+            echo "No template files found in the local templates/ directory."
           else
-            echo "changed_templates=false" >> $GITHUB_OUTPUT
-            echo "No template changes found"
+            echo "Found local template files:"
+            echo "$LOCAL_TEMPLATES"
+            
+            for template in $LOCAL_TEMPLATES; do
+              echo "Checking file: $template"
+              
+              # Check if file exists locally before hashing (redundant with find, but safe)
+              if [ ! -f "$template" ]; then
+                echo "Warning: File $template found by find but doesn't exist? Skipping."
+                continue
+              fi
+
+              # Calculate local MD5 checksum
+              LOCAL_MD5=$(md5sum "$template" | cut -d' ' -f1)
+              echo "Local MD5: $LOCAL_MD5"
+              
+              # Construct the S3 key (assuming it mirrors the local path)
+              S3_KEY="$template"
+
+              # Get S3 ETag (MD5) and handle errors
+              S3_METADATA=$(aws s3api head-object --bucket "${{ secrets.TEMPLATES_BUCKET }}" --key "$S3_KEY" 2>&1)
+              S3_HEAD_EXIT_CODE=$?
+              
+              UPLOAD_NEEDED=false
+              if [ $S3_HEAD_EXIT_CODE -ne 0 ]; then
+                # Check specifically for 'Not Found' or 'Forbidden' errors which indicate upload is needed
+                if echo "$S3_METADATA" | grep -q -E '(Not Found|Forbidden|404|403)'; then
+                  echo "File not found in S3 or access denied (assuming new file/permission issue). Needs upload."
+                  UPLOAD_NEEDED=true
+                else
+                  echo "Error getting S3 head-object for $S3_KEY: $S3_METADATA"
+                  # Decide how to handle other errors - Could skip, or force upload. Forcing upload is safer.
+                  echo "Assuming upload needed due to unexpected S3 error."
+                  UPLOAD_NEEDED=true 
+                fi
+              else
+                # Extract ETag and remove quotes
+                S3_ETAG_RAW=$(echo "$S3_METADATA" | jq -r '.ETag // empty')
+                if [ -z "$S3_ETAG_RAW" ]; then
+                   echo "Warning: Could not extract ETag from S3 metadata for $S3_KEY. Assuming upload needed."
+                   UPLOAD_NEEDED=true
+                else
+                  S3_ETAG=${S3_ETAG_RAW//\\\"/} # Remove escaped quotes
+                  S3_ETAG=${S3_ETAG//\"/}   # Remove normal quotes
+                  echo "S3 ETag: $S3_ETAG"
+                
+                  # Compare checksums
+                  if [ "$LOCAL_MD5" != "$S3_ETAG" ]; then
+                    echo "Checksums differ. Needs upload."
+                    UPLOAD_NEEDED=true
+                  else
+                    echo "Checksums match. No upload needed."
+                  fi
+                fi
+              fi
+              
+              if [ "$UPLOAD_NEEDED" = true ]; then
+                # Add file to the list, ensuring space separation
+                if [ -z "$FILES_TO_UPLOAD" ]; then
+                  FILES_TO_UPLOAD="$template"
+                else
+                  FILES_TO_UPLOAD="$FILES_TO_UPLOAD $template"
+                fi
+              fi
+              echo "---" # Separator for clarity
+            done
           fi
-      
+
+          echo "Final list of files needing upload: '$FILES_TO_UPLOAD'"
+          echo "files_to_upload=$FILES_TO_UPLOAD" >> $GITHUB_OUTPUT
+          
+          # Output a boolean flag for easier 'if' condition
+          if [ -n "$FILES_TO_UPLOAD" ]; then
+            echo "needs_upload=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_upload=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Upload changed templates to S3
-        if: steps.check_changes.outputs.changed_templates == 'true'
+        # Use the boolean flag for the condition
+        if: steps.check_changes.outputs.needs_upload == 'true'
         run: |
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD || true)
-          echo "$CHANGED_FILES" | grep '^templates/' | while read -r template; do
+          echo "Uploading templates with differing checksums or not found in S3..."
+          # Iterate through the space-separated list from the previous step's output
+          for template in ${{ steps.check_changes.outputs.files_to_upload }}; do
             echo "Uploading $template to S3..."
-            aws s3 cp $template s3://${{ secrets.TEMPLATES_BUCKET }}/$template
+            # Use the same bucket secret and ensure path matches
+            aws s3 cp "$template" "s3://${{ secrets.TEMPLATES_BUCKET }}/$template"
           done
+          echo "Upload complete."
 
   deploy-dev:
     needs: prepare-deployment
