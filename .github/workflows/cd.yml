@@ -95,6 +95,7 @@ jobs:
               S3_KEY="$template"
 
               # Get S3 ETag (MD5) and handle errors
+              echo "Templates bucket: ${{ secrets.TEMPLATES_BUCKET }}"
               S3_METADATA=$(aws s3api head-object --bucket "${{ secrets.TEMPLATES_BUCKET }}" --key "$S3_KEY" 2>&1)
               S3_HEAD_EXIT_CODE=$?
               
