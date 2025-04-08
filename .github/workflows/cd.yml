@@ -62,7 +62,13 @@ jobs:
       
       - name: Check for template changes
         id: check_changes
+        env:
+          TEMPLATES_BUCKET_FROM_SECRET: ${{ secrets.TEMPLATES_BUCKET }}
         run: |
+          echo "DEBUG: Attempting to print TEMPLATES_BUCKET secret value..."
+          echo "TEMPLATES_BUCKET_FROM_SECRET='${TEMPLATES_BUCKET_FROM_SECRET}'"
+          echo "(End of secret debug print)"
+          
           echo "Checking all local templates against S3 and comparing checksums..."
           # Ensure AWS CLI output is JSON for easier parsing
           export AWS_PAGER=""
@@ -94,15 +100,28 @@ jobs:
               # Construct the S3 key (assuming it mirrors the local path)
               S3_KEY="$template"
 
-              # Get S3 ETag (MD5) and handle errors
-              echo "Templates bucket: ${{ secrets.TEMPLATES_BUCKET }}"
-              S3_METADATA=$(aws s3api head-object --bucket "${{ secrets.TEMPLATES_BUCKET }}" --key "$S3_KEY" 2>&1)
-              S3_HEAD_EXIT_CODE=$?
+              # --- Debugging AWS CLI execution --- 
+              echo "Attempting to run: aws s3api head-object --bucket \"$TEMPLATES_BUCKET_FROM_SECRET\" --key \"$S3_KEY\""
+              # Run command directly, capture stdout/stderr separately, capture exit code
+              AWS_CMD_OUTPUT=$(aws s3api head-object --bucket "$TEMPLATES_BUCKET_FROM_SECRET" --key "$S3_KEY" 2> aws_stderr.log)
+              AWS_CMD_EXIT_CODE=$?
+              AWS_STDERR_CONTENT=$(cat aws_stderr.log)
+              rm -f aws_stderr.log # Clean up temp file
               
+              echo "AWS CLI Exit Code: $AWS_CMD_EXIT_CODE"
+              echo "AWS CLI Stdout: '$AWS_CMD_OUTPUT'"
+              echo "AWS CLI Stderr: '$AWS_STDERR_CONTENT'"
+              # --- End Debugging --- 
+
+              # Assign to existing variables for rest of script logic
+              S3_METADATA=$AWS_CMD_OUTPUT
+              S3_HEAD_EXIT_CODE=$AWS_CMD_EXIT_CODE
+
               UPLOAD_NEEDED=false
               if [ $S3_HEAD_EXIT_CODE -ne 0 ]; then
-                # Check specifically for 'Not Found' or 'Forbidden' errors which indicate upload is needed
-                if echo "$S3_METADATA" | grep -q -E '(Not Found|Forbidden|404|403)'; then
+                # Check stderr content OR metadata (which might contain error details if stdout was used for error)
+                ERROR_OUTPUT="$AWS_STDERR_CONTENT $S3_METADATA"
+                if echo "$ERROR_OUTPUT" | grep -q -E '(Not Found|Forbidden|404|403)'; then
                   echo "File not found in S3 or access denied (assuming new file/permission issue). Needs upload."
                   UPLOAD_NEEDED=true
                 else
@@ -163,7 +182,7 @@ jobs:
           for template in ${{ steps.check_changes.outputs.files_to_upload }}; do
             echo "Uploading $template to S3..."
             # Use the same bucket secret and ensure path matches
-            aws s3 cp "$template" "s3://${{ secrets.TEMPLATES_BUCKET }}/$template"
+            aws s3 cp "$template" "s3://$TEMPLATES_BUCKET_FROM_SECRET/$template"
           done
           echo "Upload complete."
 
