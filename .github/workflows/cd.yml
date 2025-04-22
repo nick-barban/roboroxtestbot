@@ -65,113 +65,26 @@ jobs:
         env:
           TEMPLATES_BUCKET_FROM_SECRET: ${{ secrets.TEMPLATES_BUCKET }}
         run: |
-          echo "DEBUG: Attempting to print TEMPLATES_BUCKET secret value..."
-          echo "TEMPLATES_BUCKET_FROM_SECRET='${TEMPLATES_BUCKET_FROM_SECRET}'"
-          echo "(End of secret debug print)"
+          echo "--- Starting Basic AWS CLI Check ---"
+          echo "Attempting to run: aws sts get-caller-identity"
+          aws sts get-caller-identity
+          AWS_EXIT_CODE=$?
+          echo "aws sts get-caller-identity Exit Code: $AWS_EXIT_CODE"
           
-          echo "Checking all local templates against S3 and comparing checksums..."
-          # Ensure AWS CLI output is JSON for easier parsing
-          export AWS_PAGER=""
-          export AWS_DEFAULT_OUTPUT=json
-          
-          # Find all files in the local templates directory
-          LOCAL_TEMPLATES=$(find templates/ -type f || true)
-          FILES_TO_UPLOAD=""
-
-          if [ -z "$LOCAL_TEMPLATES" ]; then
-            echo "No template files found in the local templates/ directory."
-          else
-            echo "Found local template files:"
-            echo "$LOCAL_TEMPLATES"
-            
-            for template in $LOCAL_TEMPLATES; do
-              echo "Checking file: $template"
-              
-              # Check if file exists locally before hashing (redundant with find, but safe)
-              if [ ! -f "$template" ]; then
-                echo "Warning: File $template found by find but doesn't exist? Skipping."
-                continue
-              fi
-
-              # Calculate local MD5 checksum
-              LOCAL_MD5=$(md5sum "$template" | cut -d' ' -f1)
-              echo "Local MD5: $LOCAL_MD5"
-              
-              # Construct the S3 key (assuming it mirrors the local path)
-              S3_KEY="$template"
-
-              # --- Debugging AWS CLI execution --- 
-              echo "Attempting to run: aws s3api head-object --bucket \"$TEMPLATES_BUCKET_FROM_SECRET\" --key \"$S3_KEY\""
-              # Run command directly, capture stdout/stderr separately, capture exit code
-              AWS_CMD_OUTPUT=$(aws s3api head-object --bucket "$TEMPLATES_BUCKET_FROM_SECRET" --key "$S3_KEY" 2> aws_stderr.log)
-              AWS_CMD_EXIT_CODE=$?
-              AWS_STDERR_CONTENT=$(cat aws_stderr.log)
-              rm -f aws_stderr.log # Clean up temp file
-              
-              echo "AWS CLI Exit Code: $AWS_CMD_EXIT_CODE"
-              echo "AWS CLI Stdout: '$AWS_CMD_OUTPUT'"
-              echo "AWS CLI Stderr: '$AWS_STDERR_CONTENT'"
-              # --- End Debugging --- 
-
-              # Assign to existing variables for rest of script logic
-              S3_METADATA=$AWS_CMD_OUTPUT
-              S3_HEAD_EXIT_CODE=$AWS_CMD_EXIT_CODE
-
-              UPLOAD_NEEDED=false
-              if [ $S3_HEAD_EXIT_CODE -ne 0 ]; then
-                # Check stderr content OR metadata (which might contain error details if stdout was used for error)
-                ERROR_OUTPUT="$AWS_STDERR_CONTENT $S3_METADATA"
-                if echo "$ERROR_OUTPUT" | grep -q -E '(Not Found|Forbidden|404|403)'; then
-                  echo "File not found in S3 or access denied (assuming new file/permission issue). Needs upload."
-                  UPLOAD_NEEDED=true
-                else
-                  echo "Error getting S3 head-object for $S3_KEY: $S3_METADATA"
-                  # Decide how to handle other errors - Could skip, or force upload. Forcing upload is safer.
-                  echo "Assuming upload needed due to unexpected S3 error."
-                  UPLOAD_NEEDED=true 
-                fi
-              else
-                # Extract ETag and remove quotes
-                S3_ETAG_RAW=$(echo "$S3_METADATA" | jq -r '.ETag // empty')
-                if [ -z "$S3_ETAG_RAW" ]; then
-                   echo "Warning: Could not extract ETag from S3 metadata for $S3_KEY. Assuming upload needed."
-                   UPLOAD_NEEDED=true
-                else
-                  S3_ETAG=${S3_ETAG_RAW//\\\"/} # Remove escaped quotes
-                  S3_ETAG=${S3_ETAG//\"/}   # Remove normal quotes
-                  echo "S3 ETag: $S3_ETAG"
-                
-                  # Compare checksums
-                  if [ "$LOCAL_MD5" != "$S3_ETAG" ]; then
-                    echo "Checksums differ. Needs upload."
-                    UPLOAD_NEEDED=true
-                  else
-                    echo "Checksums match. No upload needed."
-                  fi
-                fi
-              fi
-              
-              if [ "$UPLOAD_NEEDED" = true ]; then
-                # Add file to the list, ensuring space separation
-                if [ -z "$FILES_TO_UPLOAD" ]; then
-                  FILES_TO_UPLOAD="$template"
-                else
-                  FILES_TO_UPLOAD="$FILES_TO_UPLOAD $template"
-                fi
-              fi
-              echo "---" # Separator for clarity
-            done
+          if [ $AWS_EXIT_CODE -ne 0 ]; then
+            echo "::error::Basic AWS CLI check failed!"
+            exit $AWS_EXIT_CODE
           fi
-
-          echo "Final list of files needing upload: '$FILES_TO_UPLOAD'"
-          echo "files_to_upload=$FILES_TO_UPLOAD" >> $GITHUB_OUTPUT
           
-          # Output a boolean flag for easier 'if' condition
-          if [ -n "$FILES_TO_UPLOAD" ]; then
-            echo "needs_upload=true" >> $GITHUB_OUTPUT
-          else
-            echo "needs_upload=false" >> $GITHUB_OUTPUT
-          fi
+          echo "--- End Basic AWS CLI Check ---"
+
+          # --- Placeholder for original logic (commented out/removed for now) --- 
+          # echo "Skipping template sync logic for basic AWS CLI test."
+          
+          # --- Dummy outputs to prevent downstream failures --- 
+          echo "Final list of files needing upload: ''"
+          echo "files_to_upload=" >> $GITHUB_OUTPUT
+          echo "needs_upload=false" >> $GITHUB_OUTPUT
 
       - name: Upload changed templates to S3
         # Use the boolean flag for the condition
