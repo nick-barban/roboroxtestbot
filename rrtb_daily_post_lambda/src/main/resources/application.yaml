@@ -24,6 +24,8 @@ app:
     output:
       name: ${OUTPUT_QUEUE}
       dlq: dlq_${app.queue.output.name}
+  chat-id-from-header: ${IS_CHAT_ID_FROM_HEADER:false}
+
 logger:
   levels:
     com.nb.service.messging:

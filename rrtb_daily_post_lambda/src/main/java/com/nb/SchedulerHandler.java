@@ -7,6 +7,7 @@ import com.nb.service.messaging.MessageProducer;
 import io.micronaut.chatbots.telegram.api.Chat;
 import io.micronaut.chatbots.telegram.api.Message;
 import io.micronaut.chatbots.telegram.api.Update;
+import io.micronaut.context.annotation.Value;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.core.util.StringUtils;
 import io.micronaut.function.aws.MicronautRequestHandler;
@@ -26,7 +27,8 @@ import java.util.Map;
 public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Void> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SchedulerHandler.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("uk", "UA"));
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("d MMMM yyyy",
+            new Locale("uk", "UA"));
     private static final String DATE_PLACEHOLDER = "{{date}}";
 
     @Inject
@@ -37,6 +39,9 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
     private JsonMapper objectMapper;
     @Inject
     private ChatRepository chatRepository;
+
+    @Value("${app.chat-id-from-header}")
+    private boolean chatIdFromHeader;
 
     @Override
     public Void execute(ScheduledEvent input) {
@@ -50,12 +55,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
                 LOG.warn("No post for name {}", name);
             } else {
                 try {
-        //     Long chatId = getChatId(post);
-        //     final Chat chat = new Chat();
-        //      String chatName = getChatName(post);
-        // chat.setTitle(chatName);
-        // chat.setType("supergroup");
-        final Chat chat = getChat(name);
+                    final Chat chat = getChat(name, post);
                     sendPost(chat, post);
                 } catch (Exception e) {
                     LOG.error("Could not send post: %s as could not obtain chat: {}".formatted(name), e);
@@ -66,44 +66,54 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
         return null;
     }
 
-    private String getChatName(String text){
+    private String getChatName(String text) {
         String[] split = text.split("\n");
         return Arrays.stream(split)
-            .filter(line -> line.startsWith("#telegramGroup:"))
-            .findFirst()
-            .map(line -> line.split(":")[1].trim())
-            .orElseThrow();
+                .filter(line -> line.startsWith("#telegramGroup:"))
+                .findFirst()
+                .map(line -> line.split(":")[1].trim())
+                .orElseThrow();
     }
 
     private void sendPost(Chat chat, @NonNull String text) {
-        try {
-            String processedText = text.replace(DATE_PLACEHOLDER, LocalDate.now().format(DATE_FORMATTER));
-            final Update update = new Update();
-            final Message message = new Message();
-            message.setChat(chat);
-            final String body = processedText.replaceAll("#", "\\#");
-            message.setText(body);
-            update.setMessage(message);
-            final String msg = objectMapper.writeValueAsString(update);
-            producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
-            LOG.info("Send post: {} to output queue", chat.getTitle());
-        } catch (Exception e) {
-            LOG.error("Could not send post: %s".formatted(chat.getTitle()), e);
+            try {
+                String processedText = text.replace(DATE_PLACEHOLDER, LocalDate.now().format(DATE_FORMATTER));
+                final Update update = new Update();
+                final Message message = new Message();
+                message.setChat(chat);
+                // final String body = processedText.replaceAll("#", "\\#");
+                message.setText(processedText);
+                update.setMessage(message);
+                final String msg = objectMapper.writeValueAsString(update);
+                producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
+                LOG.info("Send post: {} to output queue", chat.getTitle());
+            } catch (Exception e) {
+                LOG.error("Could not send post: %s".formatted(chat.getTitle()), e);
+            }
         }
-    }
 
     private Long getChatId(String text) throws Exception {
         String[] split = text.split("\n");
         return Arrays.stream(split)
-            .filter(line -> line.startsWith("#chatId:"))
-            .findFirst()
-            .map(line -> line.split(":")[1].trim())
-            .map(Long::parseLong)
-            .orElseThrow();
+                .filter(line -> line.startsWith("#chatId:"))
+                .findFirst()
+                .map(line -> line.split(":")[1].trim())
+                .map(Long::parseLong)
+                .orElseThrow();
     }
 
-    private Chat getChat(String postName) throws Exception {
-        final String chatName = postName.split("_")[0];
-        return chatRepository.getChatByName(chatName).orElseThrow(Exception::new);
+    private Chat getChat(String postName, String post) throws Exception {
+        if (chatIdFromHeader) {
+            Long chatId = getChatId(post);
+            final Chat chat = new Chat();
+            chat.setId(chatId);
+            String chatName = getChatName(post);
+            chat.setTitle(chatName);
+            chat.setType("supergroup");
+            return chat;
+        } else {
+            final String chatName = postName.split("_")[0];
+            return chatRepository.getChatByName(chatName).orElseThrow(Exception::new);
+        }
     }
 }
