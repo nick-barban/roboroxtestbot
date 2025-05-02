@@ -40,7 +40,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
     @Inject
     private ChatRepository chatRepository;
 
-    @Value("${telegram.chat-id-from-header}")
+    @Value("${app.chat-id-from-header}")
     private boolean chatIdFromHeader;
 
     @Override
@@ -106,6 +106,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
         if (chatIdFromHeader) {
             Long chatId = getChatId(post);
             final Chat chat = new Chat();
+            chat.setId(chatId);
             String chatName = getChatName(post);
             chat.setTitle(chatName);
             chat.setType("supergroup");
