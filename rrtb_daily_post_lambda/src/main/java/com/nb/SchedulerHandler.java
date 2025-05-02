@@ -81,8 +81,8 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
                 final Update update = new Update();
                 final Message message = new Message();
                 message.setChat(chat);
-                final String body = processedText.replaceAll("#", "\#");
-                message.setText(body);
+                // final String body = processedText.replaceAll("#", "\\#");
+                message.setText(processedText);
                 update.setMessage(message);
                 final String msg = objectMapper.writeValueAsString(update);
                 producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
