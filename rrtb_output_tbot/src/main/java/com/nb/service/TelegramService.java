@@ -42,7 +42,7 @@ public class TelegramService extends TelegramLongPollingBot {
         try {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
-            sendMessage.setText(escapeHashTags(message));
+            sendMessage.setText(message);
             sendMessage.setParseMode(ParseMode.HTML);
             execute(sendMessage);
         } catch (TelegramApiException e) {
