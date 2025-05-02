@@ -50,12 +50,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
                 LOG.warn("No post for name {}", name);
             } else {
                 try {
-        //     Long chatId = getChatId(post);
-        //     final Chat chat = new Chat();
-        //      String chatName = getChatName(post);
-        // chat.setTitle(chatName);
-        // chat.setType("supergroup");
-        final Chat chat = getChat(name);
+                    final Chat chat = getChat(name, post);
                     sendPost(chat, post);
                 } catch (Exception e) {
                     LOG.error("Could not send post: %s as could not obtain chat: {}".formatted(name), e);
@@ -102,8 +97,16 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
             .orElseThrow();
     }
 
-    private Chat getChat(String postName) throws Exception {
-        final String chatName = postName.split("_")[0];
-        return chatRepository.getChatByName(chatName).orElseThrow(Exception::new);
+    private Chat getChat(String postName, String post) throws Exception {
+            if (chatIdFromHeader){
+                     Long chatId = getChatId(post);
+            final Chat chat = new Chat();
+             String chatName = getChatName(post);
+        chat.setTitle(chatName);
+        chat.setType("supergroup");
+        } else {
+            final String chatName = postName.split("_")[0];
+            return chatRepository.getChatByName(chatName).orElseThrow(Exception::new);
+        }
     }
 }
