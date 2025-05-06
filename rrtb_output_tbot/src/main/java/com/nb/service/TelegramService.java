@@ -1,34 +1,25 @@
 package com.nb.service;
 
 import com.nb.config.TelegramConfig;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Singleton
-public class TelegramService extends TelegramLongPollingBot {
+public class TelegramService {
     private static final Logger LOG = LoggerFactory.getLogger(TelegramService.class);
+    private final MessageSender messageSender;
     private final TelegramConfig config;
 
-    public TelegramService(TelegramConfig config) {
-        super(config.getBotToken());
+    @Inject
+    public TelegramService(MessageSender messageSender, TelegramConfig config) {
+        this.messageSender = messageSender;
         this.config = config;
-    }
-
-    @Override
-    public void onUpdateReceived(Update update) {
-        // We don't need to handle incoming updates in this bot
-    }
-
-    @Override
-    public String getBotUsername() {
-        return config.getBotUsername();
     }
 
     private String escapeHashTags(String message) {
@@ -38,20 +29,24 @@ public class TelegramService extends TelegramLongPollingBot {
         return message.replace("#", "\\#");
     }
 
-    private void sendMessage(Long chatId, String message) {
+    private void sendMessageInternal(Long chatId, String text) {
         try {
             SendMessage sendMessage = new SendMessage();
             sendMessage.setChatId(chatId);
-            sendMessage.setText(message);
+            sendMessage.setText(text);
             sendMessage.setParseMode(ParseMode.HTML);
-            execute(sendMessage);
+            messageSender.execute(sendMessage);
         } catch (TelegramApiException e) {
             LOG.error("Error sending message: {}", e.getMessage());
         }
     }
 
     public void sendMessage(Message message) {
-        LOG.debug("Telegram bot configuration:\n\ttoken={}\n\tusername={}", this.config.getBotToken(), this.config.getBotUsername());
-        sendMessage(message.getChatId(), message.getText());
+        LOG.debug("Sending message via injected sender. Bot username from config: {}", this.config.getBotUsername());
+        final Long chatId = message.getChatId();
+        final String originalText = message.getText();
+        final String escapedText = escapeHashTags(originalText);
+        
+        sendMessageInternal(chatId, escapedText);
     }
 }

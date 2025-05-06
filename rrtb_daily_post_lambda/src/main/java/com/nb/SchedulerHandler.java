@@ -76,24 +76,33 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
     }
 
     private void sendPost(Chat chat, @NonNull String text) {
-            try {
-                String processedText = text.replace(DATE_PLACEHOLDER, LocalDate.now().format(DATE_FORMATTER));
-                final Update update = new Update();
-                final Message message = new Message();
-                message.setChat(chat);
-                // final String body = processedText.replaceAll("#", "\\#");
-                message.setText(processedText);
-                update.setMessage(message);
-                final String msg = objectMapper.writeValueAsString(update);
-                producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
-                LOG.info("Send post: {} to output queue", chat.getTitle());
-            } catch (Exception e) {
-                LOG.error("Could not send post: %s".formatted(chat.getTitle()), e);
-            }
+        try {
+            String processedText = text.replace(DATE_PLACEHOLDER, LocalDate.now().format(DATE_FORMATTER));
+            final Update update = new Update();
+            final Message message = new Message();
+            message.setChat(chat);
+            final String body = getBody(processedText);
+            message.setText(processedText);
+            update.setMessage(message);
+            final String msg = objectMapper.writeValueAsString(update);
+            producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
+            LOG.info("Send post: {} to output queue", chat.getTitle());
+        } catch (Exception e) {
+            LOG.error("Could not send post: %s".formatted(chat.getTitle()), e);
         }
+    }
+
+    private String getBody(String text) {
+        String[] split = text.split("#");
+        return Arrays.stream(split)
+                .filter(line -> line.startsWith("#body:"))
+                .findFirst()
+                .map(line -> line.split(":")[1].trim())
+                .orElseThrow();
+    }
 
     private Long getChatId(String text) throws Exception {
-        String[] split = text.split("\n");
+        String[] split = text.split("#");
         return Arrays.stream(split)
                 .filter(line -> line.startsWith("#chatId:"))
                 .findFirst()
