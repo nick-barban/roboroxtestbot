@@ -25,8 +25,12 @@ app:
       name: ${OUTPUT_QUEUE}
       dlq: dlq_${app.queue.output.name}
   chat-id-from-header: ${IS_CHAT_ID_FROM_HEADER:false}
+<<<<<<< HEAD
   mode: ${APP_MODE:test}
   
+=======
+
+>>>>>>> origin/master
 logger:
   levels:
     com.nb.service.messging:

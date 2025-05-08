@@ -111,7 +111,7 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
     }
 
     private Long getChatId(String text) throws Exception {
-        String[] split = text.split("\n");
+        String[] split = text.split("#");
         return Arrays.stream(split)
                 .filter(line -> line.startsWith("#chatId:"))
                 .findFirst()
