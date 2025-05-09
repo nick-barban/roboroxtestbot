@@ -43,6 +43,9 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
     @Value("${app.chat-id-from-header}")
     private boolean chatIdFromHeader;
 
+    @Value("${app.mode}")
+    private String mode;
+
     @Override
     public Void execute(ScheduledEvent input) {
         LOG.info("Scheduled handler invocation");
@@ -81,8 +84,14 @@ public class SchedulerHandler extends MicronautRequestHandler<ScheduledEvent, Vo
             final Update update = new Update();
             final Message message = new Message();
             message.setChat(chat);
+            
+            if (mode == "prod") {
             final String body = getBody(processedText);
-            message.setText(processedText);
+                message.setText(body);
+            } else {
+                message.setText(processedText);
+            }
+
             update.setMessage(message);
             final String msg = objectMapper.writeValueAsString(update);
             producer.sendOutput(msg, chat.getTitle(), "[%s]%s".formatted(chat.getTitle(), LocalDate.now()));
