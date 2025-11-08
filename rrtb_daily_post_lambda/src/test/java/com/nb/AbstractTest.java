@@ -31,7 +31,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @MicronautTest
 @TestInstance(PER_CLASS)
 @Testcontainers
-abstract class AbstractTest implements TestPropertyProvider {
+public class AbstractTest implements TestPropertyProvider {
 
     @Inject
     BeanContext ctx;
